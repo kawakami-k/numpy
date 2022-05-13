@@ -2,7 +2,7 @@
  ** $maxopt baseline
  ** sse2 sse41
  ** vsx2
- ** neon asimd
+ ** neon asimd sve
  **/
 /**
  * Force use SSE only on x86, even if AVX2 or AVX512F are enabled

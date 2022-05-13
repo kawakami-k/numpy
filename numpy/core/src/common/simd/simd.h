@@ -59,8 +59,10 @@ typedef double     npyv_lanetype_f64;
     #include "vsx/vsx.h"
 #endif
 
-#ifdef NPY_HAVE_NEON
-    #include "neon/neon.h"
+#if defined(NPY_HAVE_SVE)
+#include "sve/sve.h"
+#elif defined(NPY_HAVE_NEON)
+#include "neon/neon.h"
 #endif
 
 #ifndef NPY_SIMD
