@@ -74,17 +74,10 @@ NPY_FINLINE npyv_f64 npyv_maxp_f64(npyv_f64 a, npyv_f64 b)
     return _mm512_mask_max_pd(a, nn, a, b);
 }
 // Maximum, integer operations
-#ifdef NPY_HAVE_AVX512BW
 #define npyv_max_u8 _mm512_max_epu8
 #define npyv_max_s8 _mm512_max_epi8
 #define npyv_max_u16 _mm512_max_epu16
 #define npyv_max_s16 _mm512_max_epi16
-#else
-    NPYV_IMPL_AVX512_FROM_AVX2_2ARG(npyv_max_u8, _mm256_max_epu8)
-    NPYV_IMPL_AVX512_FROM_AVX2_2ARG(npyv_max_s8, _mm256_max_epi8)
-    NPYV_IMPL_AVX512_FROM_AVX2_2ARG(npyv_max_u16, _mm256_max_epu16)
-    NPYV_IMPL_AVX512_FROM_AVX2_2ARG(npyv_max_s16, _mm256_max_epi16)
-#endif
 #define npyv_max_u32 _mm512_max_epu32
 #define npyv_max_s32 _mm512_max_epi32
 #define npyv_max_u64 _mm512_max_epu64
@@ -106,6 +99,7 @@ NPY_FINLINE npyv_f64 npyv_minp_f64(npyv_f64 a, npyv_f64 b)
     __mmask8 nn = _mm512_cmp_pd_mask(b, b, _CMP_ORD_Q);
     return _mm512_mask_min_pd(a, nn, a, b);
 }
+#endif
 // Minimum, integer operations
 #define npyv_min_u8(A, B) svmin_u8_x(svptrue_b8(), A, B)
 #define npyv_min_u16(A, B) svmin_u16_x(svptrue_b16(), A, B)

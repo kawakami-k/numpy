@@ -379,7 +379,7 @@ sse2_binary_scalar2_@kind@_@TYPE@(@type@ * op, @type@ * ip1, @type@ * ip2, npy_i
 
 #define NPY_KIND_@VOP@
 
-#if defined(NPY_KIND_div) && defined(NPY_HAVE_SVE)
+#if (defined(NPY_KIND_div) || defined(NPY_KIND_mul)) && defined(NPY_HAVE_SVE)
 static void
 simd_binary_@kind@_@TYPE@(@type@ * op, @type@ * ip1, @type@ * ip2, npy_intp n)
 {
@@ -412,7 +412,6 @@ simd_binary_@kind@_@TYPE@(@type@ * op, @type@ * ip1, @type@ * ip2, npy_intp n)
         }
     }
     if(n - i > 0) {
-        npyv_@mask@ m = npyv_set_@mask@(i);
         npyv_@sfx@ v1 = npyv_load_till_@sfx@(&ip1[i], n-i, 1.0);
         npyv_@sfx@ v2 = npyv_load_till_@sfx@(&ip2[i], n-i, 1.0);
         npyv_@sfx@ v3 = npyv_@VOP@_@sfx@(v1, v2);
@@ -448,7 +447,7 @@ simd_binary_@kind@_@TYPE@(@type@ * op, @type@ * ip1, @type@ * ip2, npy_intp n)
 }
 #endif
 
-#if defined(NPY_KIND_div) && defined(NPY_HAVE_SVE)
+#if (defined(NPY_KIND_div) || defined(NPY_KIND_mul)) && defined(NPY_HAVE_SVE)
 static void
 simd_binary_scalar1_@kind@_@TYPE@(@type@ * op, @type@ * ip1, @type@ * ip2, npy_intp n)
 {
@@ -458,7 +457,6 @@ simd_binary_scalar1_@kind@_@TYPE@(@type@ * op, @type@ * ip1, @type@ * ip2, npy_i
         peel = npy_aligned_block_offset(op, sizeof(@type@),
                                                  NPY_SIMD_WIDTH, n);
         if(peel) {
-            npyv_@mask@ m = npyv_set_@mask@(peel);
             npyv_@sfx@ v2 = npyv_load_till_@sfx@(&ip2[i], peel, 1.0);
             npyv_@sfx@ v3 = npyv_@VOP@_@sfx@(v1, v2);
             npyv_store_till_s@bits@((npy_int@bits@ *)&op[i], peel, npyv_reinterpret_s@bits@_@sfx@(v3));
