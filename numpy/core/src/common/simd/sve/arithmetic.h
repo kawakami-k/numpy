@@ -63,10 +63,10 @@ npyv_add_f64(npyv_f64 a, npyv_f64 b)
 }
 
 // saturated
-#define npyv_adds_u8 svqaddq_u8
-#define npyv_adds_s8 svqaddq_s8
-#define npyv_adds_u16 svqaddq_u16
-#define npyv_adds_s16 svqaddq_s16
+#define npyv_adds_u8 svqadd_u8
+#define npyv_adds_s8 svqadd_s8
+#define npyv_adds_u16 svqadd_u16
+#define npyv_adds_s16 svqadd_s16
 
 /***************************
  * Subtraction
@@ -310,42 +310,36 @@ npyv_nmulsub_f64(npyv_f64 a, npyv_f64 b, npyv_f64 c)
 NPY_FINLINE npy_uint32
 npyv_sum_u32(npyv_u32 a)
 {
-  printf("kawakami %s %d\n", __func__, __LINE__);
     return svaddv_u32(svptrue_b32(), a);
 }
 
 NPY_FINLINE npy_uint64
 npyv_sum_u64(npyv_u64 a)
 {
-  printf("kawakami %s %d\n", __func__, __LINE__);
     return svaddv_u64(svptrue_b64(), a);
 }
 
 NPY_FINLINE float
 npyv_sum_f32(npyv_f32 a)
 {
-  printf("kawakami %s %d\n", __func__, __LINE__);
     return svaddv_f32(svptrue_b32(), a);
 }
 
 NPY_FINLINE double
 npyv_sum_f64(npyv_f64 a)
 {
-  printf("kawakami %s %d\n", __func__, __LINE__);
     return svaddv_f64(svptrue_b64(), a);
 }
 
 NPY_FINLINE npy_uint16
 npyv_sumup_u8(npyv_u8 a)
 {
-  printf("kawakami %s %d\n", __func__, __LINE__);
     return svaddv_u8(svptrue_b8(), a);
 }
 
 NPY_FINLINE npy_uint32
-npyv_sum_u16(npyv_u16 a)
+npyv_sumup_u16(npyv_u16 a)
 {
-  printf("kawakami %s %d\n", __func__, __LINE__);
     return svaddv_u16(svptrue_b16(), a);
 }
 

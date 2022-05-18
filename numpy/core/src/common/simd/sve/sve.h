@@ -62,7 +62,7 @@ typedef svfloat64x3_t npyv_f64x3;
 //#include "utils.h"
 #include "memory.h"
 #include "misc.h"
-//#include "reorder.h"
+#include "reorder.h"
 #include "conversion.h"
 #include "arithmetic.h"
 #include "operators.h"

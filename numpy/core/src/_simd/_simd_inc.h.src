@@ -11,6 +11,7 @@
 /**
  * Gather all data types supported by the module.
 */
+#ifndef NPY_HAVE_SVE
 typedef union
 {
     // scalars
@@ -49,6 +50,78 @@ typedef union
     npyv_f64x3  vf64x3;
 #endif
 } simd_data;
+#else
+/**begin repeat
+ * #sfx = u8, u16, u32, u64, s8, s16, s32, s64, f32, f64#
+ */
+typedef struct
+{
+    npyv_lanetype_@sfx@ val[NPY_SIMD_WIDTH/sizeof(npyv_lanetype_@sfx@)];
+} simd_@sfx@;
+/**end repeat**/
+
+/**begin repeat
+ * #bits = 8, 16, 32, 64#
+ */
+typedef struct
+{
+  uint@bits@_t val[NPY_SIMD_WIDTH/sizeof(uint@bits@_t)];
+} simd_b@bits@;
+/**end repeat**/
+
+/**begin repeat
+ * #sfx = u8, u16, u32, u64, s8, s16, s32, s64, f32, f64#
+ */
+/**begin repeat1
+ * #N = 2, 3#
+ */
+typedef struct
+{
+    simd_@sfx@ val[@N@];
+} simd_@sfx@x@N@;
+/**end repeat1**/
+/**end repeat**/
+
+typedef union
+{
+    // scalars
+    /**begin repeat
+     * #sfx = u8, u16, u32, u64, s8, s16, s32, s64, f32, f64#
+     */
+    npyv_lanetype_@sfx@ @sfx@;
+    /**end repeat**/
+    // sequence
+    /**begin repeat
+     * #sfx  = u8, u16, u32, u64, s8, s16, s32, s64, f32, f64#
+     */
+    npyv_lanetype_@sfx@ *q@sfx@;
+    /**end repeat**/
+    // vectors
+    /**begin repeat
+     * #sfx  = u8, u16, u32, u64, s8, s16, s32, s64, f32, b8, b16, b32, b64#
+     */
+    simd_@sfx@ v@sfx@;
+    /**end repeat**/
+
+    // multi-vectors x2
+    /**begin repeat
+     * #sfx = u8, u16, u32, u64, s8, s16, s32, s64, f32#
+     */
+    simd_@sfx@x2 v@sfx@x2;
+    /**end repeat**/
+    // multi-vectors x3
+    /**begin repeat
+     * #sfx = u8, u16, u32, u64, s8, s16, s32, s64, f32#
+     */
+    simd_@sfx@x2 v@sfx@x3;
+    /**end repeat**/
+#if NPY_SIMD_F64
+    simd_f64  vf64;
+    simd_f64x2 vf64x2;
+    simd_f64x3 vf64x3;
+#endif
+} simd_data;
+#endif
 
 /**
  * Data types IDs and suffixes. Must be same data types as the ones

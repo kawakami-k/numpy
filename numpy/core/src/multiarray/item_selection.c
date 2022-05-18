@@ -2178,14 +2178,27 @@ count_zero_bytes_u8(const npy_uint8 **d, const npy_uint8 *end, npy_uint8 max_cou
 NPY_FINLINE NPY_GCC_OPT_3 npyv_u16x2
 count_zero_bytes_u16(const npy_uint8 **d, const npy_uint8 *end, npy_uint16 max_count)
 {
+#ifdef NPY_HAVE_SVE
+#define GET_LANE(B, S, L) svget2_u##B(S, L)
+#define SET_LANE(B, D, L, S) D = svset2_u##B(D, L, S)
+#else
+#define GET_LANE(B, S, L) S.val[L]
+#define SET_LANE(B, D, L, S) D.val[L] = S
+#endif
+
+#ifdef NPY_HAVE_SVE
+    const svuint16_t zero = svdup_n_u16(0);
+    npyv_u16x2 vsum16 = svcreate2(zero, zero);
+#else
     npyv_u16x2 vsum16;
     vsum16.val[0] = vsum16.val[1] = npyv_zero_u16();
+#endif
     npy_intp lane_max = 0;
     while (*d < end && lane_max <= max_count - NPY_MAX_UINT8) {
         npyv_u8 vsum8 = count_zero_bytes_u8(d, end, NPY_MAX_UINT8);
         npyv_u16x2 part = npyv_expand_u16_u8(vsum8);
-        vsum16.val[0] = npyv_add_u16(vsum16.val[0], part.val[0]);
-        vsum16.val[1] = npyv_add_u16(vsum16.val[1], part.val[1]);
+	SET_LANE(16, vsum16, 0, npyv_add_u16(GET_LANE(16, vsum16, 0), GET_LANE(16, part, 0)));
+	SET_LANE(16, vsum16, 1, npyv_add_u16(GET_LANE(16, vsum16, 1), GET_LANE(16, part, 1)));
         lane_max += NPY_MAX_UINT8;
     }
     return vsum16;
@@ -2219,11 +2232,11 @@ count_nonzero_u8(const char *data, npy_intp bstride, npy_uintp len)
         npy_uintp zcount = 0;
         for (const char *end = data + len_m; data < end;) {
             npyv_u16x2 vsum16 = count_zero_bytes_u16((const npy_uint8**)&data, (const npy_uint8*)end, NPY_MAX_UINT16);
-            npyv_u32x2 sum_32_0 = npyv_expand_u32_u16(vsum16.val[0]);
-            npyv_u32x2 sum_32_1 = npyv_expand_u32_u16(vsum16.val[1]);
+            npyv_u32x2 sum_32_0 = npyv_expand_u32_u16(GET_LANE(16, vsum16, 0));
+            npyv_u32x2 sum_32_1 = npyv_expand_u32_u16(GET_LANE(16, vsum16, 1));
             zcount += npyv_sum_u32(npyv_add_u32(
-                    npyv_add_u32(sum_32_0.val[0], sum_32_0.val[1]),
-                    npyv_add_u32(sum_32_1.val[0], sum_32_1.val[1])
+                    npyv_add_u32(GET_LANE(32, sum_32_0, 0), GET_LANE(32, sum_32_0, 1)),
+                    npyv_add_u32(GET_LANE(32, sum_32_1, 0), GET_LANE(32, sum_32_1, 1))
             ));
         }
         len  -= len_m;

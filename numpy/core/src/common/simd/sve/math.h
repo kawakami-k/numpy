@@ -56,50 +56,35 @@ npyv_square_f64(npyv_f64 a)
     return svmul_f64_x(svptrue_b64(), a, a);
 }
 
-#if 0
+
 // Maximum, natively mapping with no guarantees to handle NaN.
-#define npyv_max_f32 _mm512_max_ps
-#define npyv_max_f64 _mm512_max_pd
+#define npyv_max_f32(A, B) svmax_f32_x(svptrue_b32(), A, B)
+#define npyv_max_f64(A, B) svmax_f64_x(svptrue_b64(), A, B)
 // Maximum, supports IEEE floating-point arithmetic (IEC 60559),
 // - If one of the two vectors contains NaN, the equivalent element of the other vector is set
 // - Only if both corresponded elements are NaN, NaN is set. 
-NPY_FINLINE npyv_f32 npyv_maxp_f32(npyv_f32 a, npyv_f32 b)
-{
-    __mmask16 nn = _mm512_cmp_ps_mask(b, b, _CMP_ORD_Q);
-    return _mm512_mask_max_ps(a, nn, a, b);
-}
-NPY_FINLINE npyv_f64 npyv_maxp_f64(npyv_f64 a, npyv_f64 b)
-{
-    __mmask8 nn = _mm512_cmp_pd_mask(b, b, _CMP_ORD_Q);
-    return _mm512_mask_max_pd(a, nn, a, b);
-}
+#define npyv_maxp_f32(A, B) svmaxnm_f32_x(svptrue_b32(), A, B)
+#define npyv_maxp_f64(A, B) svmaxnm_f64_x(svptrue_b64(), A, B)
+
 // Maximum, integer operations
-#define npyv_max_u8 _mm512_max_epu8
-#define npyv_max_s8 _mm512_max_epi8
-#define npyv_max_u16 _mm512_max_epu16
-#define npyv_max_s16 _mm512_max_epi16
-#define npyv_max_u32 _mm512_max_epu32
-#define npyv_max_s32 _mm512_max_epi32
-#define npyv_max_u64 _mm512_max_epu64
-#define npyv_max_s64 _mm512_max_epi64
+#define npyv_max_u8(A, B) svmax_u8_x(svptrue_b8(), A, B)
+#define npyv_max_u16(A, B) svmax_u16_x(svptrue_b16(), A, B)
+#define npyv_max_u32(A, B) svmax_u32_x(svptrue_b32(), A, B)
+#define npyv_max_u64(A, B) svmax_u64_x(svptrue_b64(), A, B)
+#define npyv_max_s8(A, B) svmax_s8_x(svptrue_b8(), A, B)
+#define npyv_max_s16(A, B) svmax_s16_x(svptrue_b16(), A, B)
+#define npyv_max_s32(A, B) svmax_s32_x(svptrue_b32(), A, B)
+#define npyv_max_s64(A, B) svmax_s64_x(svptrue_b64(), A, B)
 
 // Minimum, natively mapping with no guarantees to handle NaN.
-#define npyv_min_f32 _mm512_min_ps
-#define npyv_min_f64 _mm512_min_pd
+#define npyv_min_f32(A, B) svmin_f32_x(svptrue_b32(), A, B)
+#define npyv_min_f64(A, B) svmin_f64_x(svptrue_b64(), A, B)
 // Minimum, supports IEEE floating-point arithmetic (IEC 60559),
 // - If one of the two vectors contains NaN, the equivalent element of the other vector is set
 // - Only if both corresponded elements are NaN, NaN is set. 
-NPY_FINLINE npyv_f32 npyv_minp_f32(npyv_f32 a, npyv_f32 b)
-{
-    __mmask16 nn = _mm512_cmp_ps_mask(b, b, _CMP_ORD_Q);
-    return _mm512_mask_min_ps(a, nn, a, b);
-}
-NPY_FINLINE npyv_f64 npyv_minp_f64(npyv_f64 a, npyv_f64 b)
-{
-    __mmask8 nn = _mm512_cmp_pd_mask(b, b, _CMP_ORD_Q);
-    return _mm512_mask_min_pd(a, nn, a, b);
-}
-#endif
+#define npyv_minp_f32(A, B) svminnm_f32_x(svptrue_b32(), A, B)
+#define npyv_minp_f64(A, B) svminnm_f64_x(svptrue_b64(), A, B)
+
 // Minimum, integer operations
 #define npyv_min_u8(A, B) svmin_u8_x(svptrue_b8(), A, B)
 #define npyv_min_u16(A, B) svmin_u16_x(svptrue_b16(), A, B)

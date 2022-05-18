@@ -23,7 +23,9 @@ simd__vector_item(PySIMDVectorObject *self, Py_ssize_t i)
     }
     npyv_lanetype_u8 *src = self->data + i * info->lane_size;
     simd_data data;
-    memcpy(&data.u64, src, info->lane_size);
+    npyv_lanetype_u8 *ptr = (npyv_lanetype_u8 *)&data;
+    for(int i=0; i<info->lane_size; i++)
+        ptr[i] = src[i];
     return simd_scalar_to_number(data, info->to_scalar);
 }
 
@@ -115,6 +117,7 @@ PySIMDVector_FromData(simd_data data, simd_data_type dtype)
     if (info->is_bool) {
         // boolean vectors are internally treated as unsigned
         // vectors to add compatibility among all SIMD extensions
+#ifndef NPY_HAVE_SVE
         switch(dtype) {
         case simd_data_vb8:
             data.vu8 = npyv_cvt_u8_b8(data.vb8);
@@ -128,8 +131,17 @@ PySIMDVector_FromData(simd_data data, simd_data_type dtype)
         default:
             data.vu64 = npyv_cvt_u64_b64(data.vb64);
         }
+#else
+    /* Nothing to do */
+#endif
     }
+#ifndef NPY_HAVE_SVE
     npyv_store_u8(vec->data, data.vu8);
+#else
+    npyv_lanetype_u8 *ptr = (npyv_lanetype_u8 *) &(vec->data);
+    for(unsigned int i=0; i<NPY_SIMD_WIDTH/sizeof(npyv_lanetype_u8); i++)
+        ptr[i] = ((npyv_lanetype_u8*)(&data.vu8))[i];
+#endif
     return vec;
 }
 
@@ -156,6 +168,7 @@ PySIMDVector_AsData(PySIMDVectorObject *vec, simd_data_type dtype)
         return data;
     }
 
+#ifndef NPY_HAVE_SVE
     data.vu8 = npyv_load_u8(vec->data);
     if (info->is_bool) {
         // boolean vectors are internally treated as unsigned
@@ -174,6 +187,11 @@ PySIMDVector_AsData(PySIMDVectorObject *vec, simd_data_type dtype)
             data.vb64 = npyv_cvt_b64_u64(data.vu64);
         }
     }
+#else
+    npyv_lanetype_u8 *ptr = (npyv_lanetype_u8 *) &data;
+    for(unsigned int i=0; i<NPY_SIMD_WIDTH/sizeof(npyv_lanetype_u8); i++)
+        ptr[i] = ((npyv_lanetype_u8 *)(&data.vu8))[i];
+#endif
     return data;
 }
 
