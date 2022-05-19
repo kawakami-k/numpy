@@ -4,7 +4,6 @@
 #define NPY_SIMD 512
 #define NPY_SIMD_WIDTH 64
 #define NPY_SIMD_F64 1
-// これは何
 #define NPY_SIMD_FMA3 1  // native support
 // Enough limit to allow us to use _mm512_i32gather_* and _mm512_i32scatter_*
 #define NPY_SIMD_MAXLOAD_STRIDE32 (0x7fffffff / 16)

@@ -68,7 +68,7 @@
         return simd_arg_to_obj(&ret);                     \
     }
 #else
-#define SIMD_IMPL_INTRIN_1(NAME, RET, IN0)                \
+#define SIMD_IMPL_INTRIN_1(NAME, RET, IN0, TYPE, SIGN, BITS)                \
     static PyObject *simd__intrin_##NAME                  \
     (PyObject* NPY_UNUSED(self), PyObject *args)          \
     {                                                     \
@@ -78,7 +78,44 @@
             simd_arg_converter, &arg                      \
         )) return NULL;                                   \
         simd_data data;                                   \
-	memcpy(&data, &(arg.data.IN0), NPY_SIMD_WIDTH);   \
+/*        sv##TYPE##_t t = svld1_##SIGN##BITS(svptrue_b##BITS(), (npyv_lanetype_##SIGN##BITS *) &arg.data.IN0); */ \
+/*        svst1_##SIGN##BITS(svptrue_b##BITS(), (npyv_lanetype_##SIGN##BITS *) &data, t); */\
+        simd_arg_free(&arg);                              \
+        simd_arg ret = {                                  \
+            .data = data, .dtype = simd_data_##RET        \
+        };                                                \
+        return simd_arg_to_obj(&ret);                     \
+    }
+#define SIMD_IMPL_INTRIN_1_LD(NAME, RET, IN0, TYPE, SIGN, BITS, DIV)             \
+    static PyObject *simd__intrin_##NAME                  \
+    (PyObject* NPY_UNUSED(self), PyObject *args)          \
+    {                                                     \
+        simd_arg arg = {.dtype = simd_data_##IN0};        \
+        if (!PyArg_ParseTuple(                            \
+            args, "O&:"NPY_TOSTRING(NAME),                \
+            simd_arg_converter, &arg                      \
+        )) return NULL;                                   \
+        simd_data data;                                   \
+/*	for(int i=0; i<npyv_nlanes_##SIGN##BITS/DIV; i++)   */  \
+/*            ((npyv_lanetype_##SIGN##BITS *) &data)[i] = ((npyv_lanetype_##SIGN##BITS *) &arg.data.IN0)[i]; */\
+        simd_arg_free(&arg);                              \
+        simd_arg ret = {                                  \
+            .data = data, .dtype = simd_data_##RET        \
+        };                                                \
+        return simd_arg_to_obj(&ret);                     \
+    }
+#define SIMD_IMPL_INTRIN_1_LD_L(NAME, RET, IN0, TYPE, SIGN, BITS, DIV)             \
+    static PyObject *simd__intrin_##NAME                  \
+    (PyObject* NPY_UNUSED(self), PyObject *args)          \
+    {                                                     \
+        simd_arg arg = {.dtype = simd_data_##IN0};        \
+        if (!PyArg_ParseTuple(                            \
+            args, "O&:"NPY_TOSTRING(NAME),                \
+            simd_arg_converter, &arg                      \
+        )) return NULL;                                   \
+        simd_data data;                                   \
+	for(int i=0; i<npyv_nlanes_##SIGN##BITS/DIV; i++)     \
+            ((npyv_lanetype_##SIGN##BITS *) &data)[i] = ((npyv_lanetype_##SIGN##BITS *) &arg.data.IN0)[i]; \
         simd_arg_free(&arg);                              \
         simd_arg ret = {                                  \
             .data = data, .dtype = simd_data_##RET        \

@@ -951,15 +951,23 @@ class _SIMD_ALL(_Test_Utility):
         Test intrinsics:
             npyv_ifadd_##SFX, npyv_ifsub_##SFX
         """
+        print("_data()=" + str(self._data()))
+        print("_data(reverse=True)="+str(self._data(reverse=True)))
         vdata_a = self.load(self._data())
         vdata_b = self.load(self._data(reverse=True))
+        print(vdata_a)
+        print(vdata_b)
         true_mask  = self.cmpeq(self.zero(), self.zero())
         false_mask = self.cmpneq(self.zero(), self.zero())
 
         data_sub = self.sub(vdata_b, vdata_a)
         ifsub = self.ifsub(true_mask, vdata_b, vdata_a, vdata_b)
+        print(data_sub)
+        print(ifsub)
         assert ifsub == data_sub
         ifsub = self.ifsub(false_mask, vdata_a, vdata_b, vdata_b)
+        print(ifsub)
+        print(vdata_b)
         assert ifsub == vdata_b
 
         data_add = self.add(vdata_b, vdata_a)
