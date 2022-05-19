@@ -188,10 +188,13 @@ PySIMDVector_AsData(PySIMDVectorObject *vec, simd_data_type dtype)
         }
     }
 #else
-    npyv_lanetype_u8 *ptr = (npyv_lanetype_u8 *) &data;
-    for(unsigned int i=0; i<NPY_SIMD_WIDTH/sizeof(npyv_lanetype_u8); i++)
-        ptr[i] = ((npyv_lanetype_u8 *)(&data.vu8))[i];
+    for(int i=0; i<npyv_nlanes_u8; i++)
+      ((npyv_lanetype_u8 *) &data.vu8)[i] = ((npyv_lanetype_u8 *)vec->data)[i];
+/* Do not convert to predicate register data,
+     because Arm C Language Extension can not  load/store data
+     from/to predicate registers. */
 #endif
+
     return data;
 }
 

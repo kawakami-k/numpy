@@ -63,8 +63,10 @@ simd__intrin_@intrin@_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
 #ifndef NPY_HAVE_SVE
     npyv_@intrin@_@sfx@(seq_arg.data.q@sfx@, vec_arg.data.v@sfx@);
 #else
-    for(int i=0; i<npyv_nlanes_@sfx@; i++)
-        seq_arg.data.q@sfx@[i] = ((npyv_lanetype_@sfx@ *) &vec_arg.data.v@sfx@)[i];
+    sv@type@_t t = svld1_@sign@@size@(svptrue_b@size@(), (npyv_lanetype_@sfx@ *) &vec_arg.data.v@sfx@);
+    npyv_@intrin@_@sfx@(seq_arg.data.q@sfx@, t);
+//    for(int i=0; i<npyv_nlanes_@sfx@; i++)
+//        seq_arg.data.q@sfx@[i] = ((npyv_lanetype_@sfx@ *) &vec_arg.data.v@sfx@)[i];
 #endif
     // write-back
     if (simd_sequence_fill_iterable(seq_arg.obj, seq_arg.data.q@sfx@, simd_data_q@sfx@)) {
@@ -81,7 +83,7 @@ simd__intrin_@intrin@_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
  ****************************************/
 #if @ncont_sup@
 // Partial Load
-SIMD_IMPL_INTRIN_3(load_till_@sfx@, v@sfx@, q@sfx@, u32, @sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_3_LD(load_till_@sfx@, v@sfx@, q@sfx@, u32, @sfx@, @type@, @sign@, @size@)
 SIMD_IMPL_INTRIN_2_LD(load_tillz_@sfx@, v@sfx@, q@sfx@, u32, @type@, @sign@, @size@)
 
 // Partial Store
@@ -365,7 +367,7 @@ SIMD_IMPL_INTRIN_2IMM(shri_@sfx@, v@sfx@, v@sfx@, @shr_imm@, @type@, @sign@, @si
 SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
 /**end repeat1**/
 
-SIMD_IMPL_INTRIN_1(not_@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1_NOT(not_@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
 
 /**begin repeat1
  * #intrin = cmpeq, cmpneq, cmpgt, cmpge, cmplt, cmple#
@@ -420,11 +422,11 @@ SIMD_IMPL_INTRIN_3(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign
 #endif // fused_sup
 
 #if @sum_sup@
-SIMD_IMPL_INTRIN_1(sum_@sfx@, @sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1_SUM(sum_@sfx@, @sfx@, v@sfx@, @type@, @sign@, @size@)
 #endif // sum_sup
 
 #if @sumup_sup@
-SIMD_IMPL_INTRIN_1(sumup_@sfx@, @esfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1_SUM(sumup_@sfx@, @esfx@, v@sfx@, @type@, @sign@, @size@)
 #endif // sumup_sup
 
 /***************************
