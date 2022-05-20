@@ -318,8 +318,8 @@
         sv##TYPE##_t buf2 = svld1_##SIGN##BITS(svptrue_b ## BITS(), (npyv_lanetype_##SIGN##BITS *) &arg2.data.IN1); \
 	sv##TYPE##x2_t r = npyv_##NAME(buf1, buf2); \
         simd_data data; \
-	svst1_##SIGN##BITS(svptrue_b##BITS(), &data.v##SIGN##BITS.val[0], svget2_##SIGN##BITS(r, 0)); \
-	svst1_##SIGN##BITS(svptrue_b##BITS(), &data.v##SIGN##BITS.val[1], svget2_##SIGN##BITS(r, 1)); \
+	svst1_##SIGN##BITS(svptrue_b##BITS(), &(data.v##SIGN##BITS##x2.val[0]), svget2_##SIGN##BITS(r, 0)); \
+	svst1_##SIGN##BITS(svptrue_b##BITS(), &(data.v##SIGN##BITS##x2.val[1]), svget2_##SIGN##BITS(r, 1)); \
         simd_arg_free(&arg1);                             \
         simd_arg_free(&arg2);                             \
         simd_arg ret = {                                  \

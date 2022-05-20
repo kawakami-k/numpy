@@ -7,10 +7,10 @@
 
 // combine lower part of two vectors
 #define NPYV_IMPL_SVE_COMBINEL(TYPE, SIGN, BITS, VL)			\
-NPY_FINLINE npyv_ ## SIGN ## BITS npyv_combinel_ ## SIGN ## BITS (npyv_ ## SIGN ## BITS A, npyv_ ## SIGN ## BITS B) \
+NPY_FINLINE npyv_ ## SIGN ## BITS npyv_combinel_ ## SIGN ## BITS (npyv_ ## SIGN ## BITS a, npyv_ ## SIGN ## BITS b) \
 { \
-  B = svext_ ## SIGN ## BITS (B, B, NPY_SIMD_WIDTH/sizeof(TYPE)/2); \
-  return svsel_ ## SIGN ## BITS (svptrue_pat_b ## BITS (VL), A, B); \
+  sv ## TYPE t = svext_ ## SIGN ## BITS (b, b, NPY_SIMD_WIDTH/sizeof(TYPE)/2); \
+  return svsel_ ## SIGN ## BITS (svptrue_pat_b ## BITS (VL), a, t); \
 }
 
 NPYV_IMPL_SVE_COMBINEL(uint8_t, u, 8, SV_VL32)
@@ -26,10 +26,10 @@ NPYV_IMPL_SVE_COMBINEL(float64_t, f, 64, SV_VL4)
 
 // combine higher part of two vectors
 #define NPYV_IMPL_SVE_COMBINEH(TYPE, SIGN, BITS, VL)			\
-NPY_FINLINE npyv_ ## SIGN ## BITS npyv_combineh_ ## SIGN ## BITS (npyv_ ## SIGN ## BITS A, npyv_ ## SIGN ## BITS B) \
+NPY_FINLINE npyv_ ## SIGN ## BITS npyv_combineh_ ## SIGN ## BITS (npyv_ ## SIGN ## BITS a, npyv_ ## SIGN ## BITS b) \
 { \
-  A = svext_ ## SIGN ## BITS (A, A, NPY_SIMD_WIDTH/sizeof(TYPE)/2); \
-  return svsel_ ## SIGN ## BITS (svptrue_pat_b ## BITS (VL), A, B); \
+  sv ## TYPE t = svext_ ## SIGN ## BITS (a, a, NPY_SIMD_WIDTH/sizeof(TYPE)/2); \
+  return svsel_ ## SIGN ## BITS (svptrue_pat_b ## BITS (VL), t, b); \
 }
 
 NPYV_IMPL_SVE_COMBINEH(uint8_t, u, 8, SV_VL32)
@@ -70,9 +70,9 @@ NPY_FINLINE npyv_ ## SIGN ## BITS ## x2 npyv_zip_ ## SIGN ## BITS (npyv_ ## SIGN
 { \
     npyv_ ## SIGN ## BITS ## x2 r = svundef2_ ## SIGN ## BITS (); \
     r = svset2_ ## SIGN ## BITS (r, 0, svzip1_ ## SIGN ## BITS (a, b)); \
-    a = svext_ ## SIGN ## BITS (a, a, NPY_SIMD_WIDTH/sizeof(TYPE)/2); \
-    b = svext_ ## SIGN ## BITS (b, b, NPY_SIMD_WIDTH/sizeof(TYPE)/2); \
-    r = svset2_  ## SIGN ## BITS (r, 1, svzip1_  ## SIGN ## BITS (a, b)); \
+    sv ## TYPE t0 = svext_ ## SIGN ## BITS (a, a, NPY_SIMD_WIDTH/sizeof(TYPE)/2); \
+    sv ## TYPE t1 = svext_ ## SIGN ## BITS (b, b, NPY_SIMD_WIDTH/sizeof(TYPE)/2); \
+    r = svset2_  ## SIGN ## BITS (r, 1, svzip1_  ## SIGN ## BITS (t0, t1)); \
     return r; \
 }
 

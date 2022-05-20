@@ -191,7 +191,7 @@ PySIMDVector_AsData(PySIMDVectorObject *vec, simd_data_type dtype)
     for(int i=0; i<npyv_nlanes_u8; i++)
       ((npyv_lanetype_u8 *) &data.vu8)[i] = ((npyv_lanetype_u8 *)vec->data)[i];
 /* Do not convert to predicate register data,
-     because Arm C Language Extension can not  load/store data
+     because Arm C Language Extension can not load/store data
      from/to predicate registers. */
 #endif
 
