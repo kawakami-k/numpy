@@ -158,6 +158,24 @@
         };                                                \
         return simd_arg_to_obj(&ret);                     \
     }
+#define SIMD_IMPL_INTRIN_1_SETALL(NAME, RET, IN0, TYPE, SIGN, BITS)                \
+    static PyObject *simd__intrin_##NAME                  \
+    (PyObject* NPY_UNUSED(self), PyObject *args)          \
+    {                                                     \
+        simd_arg arg = {.dtype = simd_data_##IN0};        \
+        if (!PyArg_ParseTuple(                            \
+            args, "O&:"NPY_TOSTRING(NAME),                \
+            simd_arg_converter, &arg                      \
+        )) return NULL;                                   \
+        simd_data data;                                   \
+        sv##TYPE##_t t = npyv_##NAME(arg.data.IN0);       \
+        svst1_##SIGN##BITS(svptrue_b##BITS(), (npyv_lanetype_##SIGN##BITS *) &data, t); \
+        simd_arg_free(&arg);                              \
+        simd_arg ret = {                                  \
+            .data = data, .dtype = simd_data_##RET        \
+        };                                                \
+        return simd_arg_to_obj(&ret);                     \
+    }
 #endif
 
 #ifndef NPY_HAVE_SVE
@@ -242,7 +260,7 @@
         )) return NULL;                                   \
         simd_data data; \
 	sv##TYPE##_t t = svld1_##SIGN##BITS(svptrue_b##BITS(), (npyv_lanetype_##SIGN##BITS *) &arg2.data.IN1); \
-	sv##TYPE##_t r = npyv_##NAME((npyv_lanetype_##SIGN##BITS *) &arg1.data.IN0, svreinterpret_u##BITS##_##SIGN##BITS(t)); \
+	sv##TYPE##_t r = npyv_##NAME((npyv_lanetype_##SIGN##BITS *) arg1.data.IN0, svreinterpret_u##BITS##_##SIGN##BITS(t)); \
 	svst1_##SIGN##BITS(svptrue_b##BITS(), (npyv_lanetype_##SIGN##BITS *) &data, r); \
         simd_arg_free(&arg1);                             \
         simd_arg_free(&arg2);                             \
@@ -318,8 +336,8 @@
         sv##TYPE##_t buf2 = svld1_##SIGN##BITS(svptrue_b ## BITS(), (npyv_lanetype_##SIGN##BITS *) &arg2.data.IN1); \
 	sv##TYPE##x2_t r = npyv_##NAME(buf1, buf2); \
         simd_data data; \
-	svst1_##SIGN##BITS(svptrue_b##BITS(), &(data.v##SIGN##BITS##x2.val[0]), svget2_##SIGN##BITS(r, 0)); \
-	svst1_##SIGN##BITS(svptrue_b##BITS(), &(data.v##SIGN##BITS##x2.val[1]), svget2_##SIGN##BITS(r, 1)); \
+	svst1_##SIGN##BITS(svptrue_b##BITS(), (npyv_lanetype_##SIGN##BITS *) &(data.v##SIGN##BITS##x2.val[0]), svget2_##SIGN##BITS(r, 0)); \
+	svst1_##SIGN##BITS(svptrue_b##BITS(), (npyv_lanetype_##SIGN##BITS *) &(data.v##SIGN##BITS##x2.val[1]), svget2_##SIGN##BITS(r, 1)); \
         simd_arg_free(&arg1);                             \
         simd_arg_free(&arg2);                             \
         simd_arg ret = {                                  \

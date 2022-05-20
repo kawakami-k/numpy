@@ -69,11 +69,99 @@ npyv_zero_f64()
 #define npyv_setall_f32 svdup_n_f32
 #define npyv_setall_f64 svdup_n_f64
 
+
+#define NPYV_IMPL_SVE_EXPAND_2(CAST, I0, I1, ...) CAST I0, CAST I1
+#define NPYV_IMPL_SVE_EXPAND_4(CAST, I0, I1, I2, I3, ...) CAST I0, CAST I1, CAST I2, CAST I3
+#define NPYV_IMPL_SVE_EXPAND_8(CAST, I0, I1, I2, I3, I4, I5, I6, I7) \
+  NPYV_IMPL_SVE_EXPAND_4(CAST, I0, I1, I2, I3), \
+    NPYV_IMPL_SVE_EXPAND_4(CAST, I4, I5, I6, I7)
+#define NPYV_IMPL_SVE_EXPAND_16(CAST, I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13, I14, I15) \
+    NPYV_IMPL_SVE_EXPAND_8(CAST, I0, I1, I2, I3, I4, I5, I6, I7), \
+    NPYV_IMPL_SVE_EXPAND_8(CAST, I8, I9, I10, I11, I12, I13, I14, I15)
+#define NPYV_IMPL_SVE_EXPAND_32(CAST, I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13, I14, I15, I16, I17, I18, I19, I20, I21, I22, I23, I24, I25, I26, I27, I28, I29, I30, I31) \
+    NPYV_IMPL_SVE_EXPAND_16(CAST, I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13, I14, I15), \
+      NPYV_IMPL_SVE_EXPAND_16(CAST, I16, I17, I18, I19, I20, I21, I22, I23, I24, I25, I26, I27, I28, I29, I30, I31)
+#define NPYV_IMPL_SVE_EXPAND_64(CAST, I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13, I14, I15, I16, I17, I18, I19, I20, I21, I22, I23, I24, I25, I26, I27, I28, I29, I30, I31, I32, I33, I34, I35, I36, I37, I38, I39, I40, I41, I42, I43, I44, I45, I46, I47, I48, I49, I50, I51, I52, I53, I54, I55, I56, I57, I58, I59, I60, I61, I62, I63) \
+  NPYV_IMPL_SVE_EXPAND_32(CAST, I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13, I14, I15, I16, I17, I18, I19, I20, I21, I22, I23, I24, I25, I26, I27, I28, I29, I30, I31), \
+    NPYV_IMPL_SVE_EXPAND_32(CAST, I32, I33, I34, I35, I36, I37, I38, I39, I40, I41, I42, I43, I44, I45, I46, I47, I48, I49, I50, I51, I52, I53, I54, I55, I56, I57, I58, I59, I60, I61, I62, I63)
+
 /**
  * vector with specific values set to each lane and
  * set a specific value to all remained lanes
  *
  */
+#define NPYV_IMPL_SETF_8(TYPE, SIGN)					\
+  NPY_FINLINE npyv_ ## SIGN ## 8 npyv__setf_ ## SIGN ## 8 (NPYV_IMPL_SVE_EXPAND_64(TYPE, \
+								       i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7,  i8,  i9,  i10, i11, i12, i13, i14, i15, \
+								       i16, i17, i18, i19, i20, i21, i22, i23, i24, i25, i26, i27, i28, i29, i30, i31, \
+								       i32, i33, i34, i35, i36, i37, i38, i39, i40, i41, i42, i43, i44, i45, i46, i47, \
+								       i48, i49, i50, i51, i52, i53, i54, i55, i56, i57, i58, i59, i60, i61, i62, i63)) \
+{					       \
+  const TYPE NPY_DECL_ALIGNED(64) data[64] = { \
+        i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7,  i8,  i9,  i10, i11, i12, i13, i14, i15, \
+        i16, i17, i18, i19, i20, i21, i22, i23, i24, i25, i26, i27, i28, i29, i30, i31, \
+        i32, i33, i34, i35, i36, i37, i38, i39, i40, i41, i42, i43, i44, i45, i46, i47, \
+        i48, i49, i50, i51, i52, i53, i54, i55, i56, i57, i58, i59, i60, i61, i62, i63, \
+  };							      \
+  return svld1_ ## SIGN ## 8 (svptrue_b ## 8 (), data); \
+}
+
+#define NPYV_IMPL_SETF_16(TYPE, SIGN) \
+  NPY_FINLINE npyv_ ## SIGN ## 16 npyv__setf_ ## SIGN ## 16 (NPYV_IMPL_SVE_EXPAND_32(TYPE, \
+									 i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7,  i8,  i9,  i10, i11, i12, i13, i14, i15, \
+									 i16, i17, i18, i19, i20, i21, i22, i23, i24, i25, i26, i27, i28, i29, i30, i31)) \
+{ \
+  const TYPE NPY_DECL_ALIGNED(64) data[32] = { \
+        i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7,  i8,  i9,  i10, i11, i12, i13, i14, i15, \
+        i16, i17, i18, i19, i20, i21, i22, i23, i24, i25, i26, i27, i28, i29, i30, i31, \
+  };							      \
+  return svld1_ ## SIGN ## 16 (svptrue_b ## 16 (), data); \
+}
+
+#define NPYV_IMPL_SETF_32(TYPE, SIGN) \
+  NPY_FINLINE npyv_ ## SIGN ## 32 npyv__setf_ ## SIGN ## 32 (NPYV_IMPL_SVE_EXPAND_16(TYPE, \
+        i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7,  i8,  i9,  i10, i11, i12, i13, i14, i15)) \
+{ \
+  const TYPE NPY_DECL_ALIGNED(64) data[16] = { \
+        i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7,  i8,  i9,  i10, i11, i12, i13, i14, i15, \
+  };							      \
+  return svld1_ ## SIGN ## 32 (svptrue_b ## 32 (), data); \
+}
+
+#define NPYV_IMPL_SETF_64(TYPE, SIGN) \
+  NPY_FINLINE npyv_ ## SIGN ## 64 npyv__setf_ ## SIGN ## 64 (NPYV_IMPL_SVE_EXPAND_8(TYPE, \
+        i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7)) \
+{ \
+  const TYPE NPY_DECL_ALIGNED(64) data[16] = { \
+        i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7, \
+  };							      \
+  return svld1_ ## SIGN ## 64 (svptrue_b ## 64 (), data); \
+}
+
+NPYV_IMPL_SETF_8(uint8_t, u)
+NPYV_IMPL_SETF_16(uint16_t, u)
+NPYV_IMPL_SETF_32(uint32_t, u)
+NPYV_IMPL_SETF_64(uint64_t, u)
+NPYV_IMPL_SETF_8(int8_t, s)
+NPYV_IMPL_SETF_16(int16_t, s)
+NPYV_IMPL_SETF_32(int32_t, s)
+NPYV_IMPL_SETF_64(int64_t, s)
+NPYV_IMPL_SETF_32(float32_t, f)
+NPYV_IMPL_SETF_64(float64_t, f)
+
+#define npyv_setf_u8(FILL, ...) npyv__setf_u8(NPYV__SET_FILL_64(uint8_t, FILL, __VA_ARGS__))
+#define npyv_setf_u16(FILL, ...) npyv__setf_u16(NPYV__SET_FILL_32(uint16_t, FILL, __VA_ARGS__))
+#define npyv_setf_u32(FILL, ...) npyv__setf_u32(NPYV__SET_FILL_16(uint32_t, FILL, __VA_ARGS__))
+#define npyv_setf_u64(FILL, ...) npyv__setf_u64(NPYV__SET_FILL_8(uint64_t, FILL, __VA_ARGS__))
+
+#define npyv_setf_s8(FILL, ...) npyv__setf_s8(NPYV__SET_FILL_64(int8_t, FILL, __VA_ARGS__))
+#define npyv_setf_s16(FILL, ...) npyv__setf_s16(NPYV__SET_FILL_32(int16_t, FILL, __VA_ARGS__))
+#define npyv_setf_s32(FILL, ...) npyv__setf_s32(NPYV__SET_FILL_16(int32_t, FILL, __VA_ARGS__))
+#define npyv_setf_s64(FILL, ...) npyv__setf_s64(NPYV__SET_FILL_8(int64_t, FILL, __VA_ARGS__))
+
+#define npyv_setf_f32(FILL, ...) npyv__setf_f32(NPYV__SET_FILL_16(float32_t, FILL, __VA_ARGS__))
+#define npyv_setf_f64(FILL, ...) npyv__setf_f64(NPYV__SET_FILL_8(float64_t, FILL, __VA_ARGS__))
+
 NPY_FINLINE npyv_u8
 npyv__set_u8(uint8_t i0, uint8_t i1, uint8_t i2, uint8_t i3, uint8_t i4,
              uint8_t i5, uint8_t i6, uint8_t i7, uint8_t i8, uint8_t i9,
@@ -139,12 +227,6 @@ npyv__set_s16(int8_t i0, int8_t i1, int8_t i2, int8_t i3, int8_t i4, int8_t i5,
     return svld1_s16(svptrue_b16(), (const void *)data);
 }
 
-#define npyv_setf_u8(FILL, ...) \
-    npyv__set_u8(NPYV__SET_FILL_16(npy_uint8, FILL, __VA_ARGS__))
-#define npyv_setf_s8(FILL, ...) \
-    npyv__set_s8(NPYV__SET_FILL_16(npy_int8, FILL, __VA_ARGS__))
-#define npyv_setf_u16(FILL, ...) \
-    npyv__set_u16(NPYV__SET_FILL_8(npy_uint16, FILL, __VA_ARGS__))
 
 // Set mask for lane #0 - #(a-1)
 #define NPYV_IMPL_SVE_SET_B(BITS) \

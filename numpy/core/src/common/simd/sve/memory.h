@@ -508,9 +508,13 @@ NPYV_IMPL_SVE_REST_PARTIAL_TYPES(f64, s64)
 // that contains 32 elements of float32.
 NPY_FINLINE npyv_f32 npyv_lut32_f32(const float *table, npyv_u32 idx)
 {
+    const svbool_t mask_all = svptrue_b32();
+    const npyv_u32 t_idx = svand_n_u32_m(mask_all, idx, 0xf);
     const npyv_f32 table0 = npyv_load_f32(table);
     const npyv_f32 table1 = npyv_load_f32(table + 16);
-    const svbool_t mask = svcmpne_n_u32(svptrue_b32(), idx, 0);
+    const svbool_t mask = svcmpne_n_u32(mask_all, svand_n_u32_m(mask_all, idx, 1<<4), 0);
+    npyv_f32 t0 = svtbl_f32(table0, t_idx);
+    npyv_f32 t1 = svtbl_f32(table1, t_idx);
     return svsel_f32(mask, table1, table0);
 }
 NPY_FINLINE npyv_u32 npyv_lut32_u32(const npy_uint32 *table, npyv_u32 idx)
@@ -522,10 +526,14 @@ NPY_FINLINE npyv_s32 npyv_lut32_s32(const npy_int32 *table, npyv_u32 idx)
 // that contains 16 elements of float64.
 NPY_FINLINE npyv_f64 npyv_lut16_f64(const double *table, npyv_u64 idx)
 {
+    const svbool_t mask_all = svptrue_b64();
+    const npyv_u64 t_idx = svand_n_u64_m(mask_all, idx, 0x7);
     const npyv_f64 table0 = npyv_load_f64(table);
     const npyv_f64 table1 = npyv_load_f64(table + 8);
-    const svbool_t mask = svcmpne_n_u64(svptrue_b64(), idx, 0);
-    return svsel_f64(mask, table1, table0);
+    const svbool_t mask = svcmpne_n_u64(mask_all, svand_n_u64_m(mask_all, idx, 1<<3), 0);
+    npyv_f64 t0 = svtbl_f64(table0, t_idx);
+    npyv_f64 t1 = svtbl_f64(table1, t_idx);
+    return svsel_f64(mask, t1, t0);
 }
 NPY_FINLINE npyv_u64 npyv_lut16_u64(const npy_uint64 *table, npyv_u64 idx)
 { return npyv_reinterpret_u64_f64(npyv_lut16_f64((const double*)table, idx)); }
