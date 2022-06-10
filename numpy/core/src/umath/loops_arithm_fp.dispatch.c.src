@@ -626,6 +626,10 @@ run_binary_simd_@kind@_@TYPE@(char **args, npy_intp const *dimensions, npy_intp 
  * # OP = +, -, *, /#
  * # PW = 1, 0, 0, 0#
  */
+#define NPY_KIND_@kind@
+#if defined(NPY_KIND_divide) && defined(NPY_HAVE_SVE)
+__attribute__((target("arch=armv8-a")))
+#endif
 NPY_NO_EXPORT void NPY_CPU_DISPATCH_CURFX(@TYPE@_@kind@)
 (char **args, npy_intp const *dimensions, npy_intp const *steps, void *NPY_UNUSED(func))
 {
@@ -650,6 +654,7 @@ NPY_NO_EXPORT void NPY_CPU_DISPATCH_CURFX(@TYPE@_@kind@)
         }
     }
 }
+#undef NPY_KIND_@kind@
 /**end repeat1**/
 /**end repeat**/
 
