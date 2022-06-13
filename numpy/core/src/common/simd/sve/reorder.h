@@ -96,15 +96,22 @@ NPYV_IMPL_SVE_ZIP(float32_t, f, 32)
 NPYV_IMPL_SVE_ZIP(float64_t, f, 64)
 
 // Reverse elements of each 64-bit lane
-#define npyv_rev64_u8 svrev_u8
-#define npyv_rev64_u16 svrev_u16
-#define npyv_rev64_u32 svrev_u32
-#define npyv_rev64_u64 svrev_u64
-#define npyv_rev64_s8 svrev_s8
-#define npyv_rev64_s16 svrev_s16
-#define npyv_rev64_s32 svrev_s32
-#define npyv_rev64_s64 svrev_s64
-#define npyv_rev64_f32 svrev_f32
-#define npyv_rev64_f64 svrev_f64
+#define npyv_rev64_u8(a) \
+    svrev_u8(svreinterpret_u8_u64(svrev_u64(svreinterpret_u64_u8(a))))
+#define npyv_rev64_u16(a) \
+    svrev_u16(svreinterpret_u16_u64(svrev_u64(svreinterpret_u64_u16(a))))
+#define npyv_rev64_u32(a) \
+    svrev_u32(svreinterpret_u32_u64(svrev_u64(svreinterpret_u64_u32(a))))
+#define npyv_rev64_u64(a) svrev_u64(a)
+#define npyv_rev64_s8(a) \
+    svrev_s8(svreinterpret_s8_u64(svrev_u64(svreinterpret_u64_s8(a))))
+#define npyv_rev64_s16(a) \
+    svrev_s16(svreinterpret_s16_u64(svrev_u64(svreinterpret_u64_s16(a))))
+#define npyv_rev64_s32(a) \
+    svrev_s32(svreinterpret_s32_u64(svrev_u64(svreinterpret_u64_s32(a))))
+#define npyv_rev64_s64(a) svrev_s64(a)
+#define npyv_rev64_f32(a) \
+    svrev_f32(svreinterpret_f32_u64(svrev_u64(svreinterpret_u64_f32(a))))
+#define npyv_rev64_f64(a) svrev_f64(a)
 
 #endif  // _NPY_SIMD_SVE_REORDER_H
