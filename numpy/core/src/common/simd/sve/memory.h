@@ -12,7 +12,7 @@
  ***************************/
 // GCC requires literal type definitions for pointers types otherwise it causes
 // ambiguous errors
-#define NPYV_IMPL_SVE_MEM(SFX, SFX1, SFX2, CTYPE, VL_PAT, HALF_LANE)		\
+#define NPYV_IMPL_SVE_MEM(SFX, SFX1, SFX2, CTYPE, VL_PAT, HALF_LANE)        \
     NPY_FINLINE npyv_##SFX npyv_load_##SFX(const npyv_lanetype_##SFX *ptr)  \
     {                                                                       \
         return svld1_##SFX(svptrue_##SFX1(), (const CTYPE *)ptr);           \
@@ -32,7 +32,7 @@
     NPY_FINLINE void npyv_store_##SFX(npyv_lanetype_##SFX *ptr,             \
                                       npyv_##SFX vec)                       \
     {                                                                       \
-      svst1_##SFX(svptrue_##SFX1(), (CTYPE *)ptr, vec);			\
+        svst1_##SFX(svptrue_##SFX1(), (CTYPE *)ptr, vec);                   \
     }                                                                       \
     NPY_FINLINE void npyv_storea_##SFX(npyv_lanetype_##SFX *ptr,            \
                                        npyv_##SFX vec)                      \
@@ -53,20 +53,20 @@
                                        npyv_##SFX vec)                      \
     {                                                                       \
         svbool_t mask = svptrue_pat_##SFX1(VL_PAT);                         \
-	sv ## CTYPE tmp = svext_ ## SFX (vec, vec, HALF_LANE); \
-        svst1_##SFX(mask, (CTYPE *)ptr, tmp);	\
+        sv##CTYPE tmp = svext_##SFX(vec, vec, HALF_LANE);                   \
+        svst1_##SFX(mask, (CTYPE *)ptr, tmp);                               \
     }
 
 NPYV_IMPL_SVE_MEM(u8, b8, u8, uint8_t, SV_VL32, 32)
-  NPYV_IMPL_SVE_MEM(u16, b16, u16, uint16_t, SV_VL16, 16)
-  NPYV_IMPL_SVE_MEM(u32, b32, u32, uint32_t, SV_VL8, 8)
-  NPYV_IMPL_SVE_MEM(u64, b64, u64, uint64_t, SV_VL4, 4)
-  NPYV_IMPL_SVE_MEM(s8, b8, s8, int8_t, SV_VL32, 32)
-  NPYV_IMPL_SVE_MEM(s16, b16, s16, int16_t, SV_VL16, 16)
-  NPYV_IMPL_SVE_MEM(s32, b32, s32, int32_t, SV_VL8, 8)
-  NPYV_IMPL_SVE_MEM(s64, b64, s64, int64_t, SV_VL4, 4)
-  NPYV_IMPL_SVE_MEM(f32, b32, u32, float32_t, SV_VL8, 8)
-  NPYV_IMPL_SVE_MEM(f64, b64, u64, float64_t, SV_VL4, 4)
+NPYV_IMPL_SVE_MEM(u16, b16, u16, uint16_t, SV_VL16, 16)
+NPYV_IMPL_SVE_MEM(u32, b32, u32, uint32_t, SV_VL8, 8)
+NPYV_IMPL_SVE_MEM(u64, b64, u64, uint64_t, SV_VL4, 4)
+NPYV_IMPL_SVE_MEM(s8, b8, s8, int8_t, SV_VL32, 32)
+NPYV_IMPL_SVE_MEM(s16, b16, s16, int16_t, SV_VL16, 16)
+NPYV_IMPL_SVE_MEM(s32, b32, s32, int32_t, SV_VL8, 8)
+NPYV_IMPL_SVE_MEM(s64, b64, s64, int64_t, SV_VL4, 4)
+NPYV_IMPL_SVE_MEM(f32, b32, u32, float32_t, SV_VL8, 8)
+NPYV_IMPL_SVE_MEM(f64, b64, u64, float64_t, SV_VL4, 4)
 
 /***************************
  * Non-contiguous Load
@@ -76,31 +76,30 @@ NPY_FINLINE npyv_u32
 npyv_loadn_u32(const npy_uint32 *ptr, npy_intp stride)
 {
 #if 1
-  assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
+    assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b32();
     const svint32_t steps = svindex_s32(0, 1);
-    const svint32_t idx =
-      svmul_n_s32_x(mask_all, steps, stride);
+    const svint32_t idx = svmul_n_s32_x(mask_all, steps, stride);
 
     return svld1_gather_s32index_u32(mask_all, ptr, idx);
 #else
     svuint32_t vec;
-    vec = svinsr_n_u32(vec, *(ptr + stride*15));
-    vec = svinsr_n_u32(vec, *(ptr + stride*14));
-    vec = svinsr_n_u32(vec, *(ptr + stride*13));
-    vec = svinsr_n_u32(vec, *(ptr + stride*12));
-    vec = svinsr_n_u32(vec, *(ptr + stride*11));
-    vec = svinsr_n_u32(vec, *(ptr + stride*10));
-    vec = svinsr_n_u32(vec, *(ptr + stride*9));
-    vec = svinsr_n_u32(vec, *(ptr + stride*8));
-    vec = svinsr_n_u32(vec, *(ptr + stride*7));
-    vec = svinsr_n_u32(vec, *(ptr + stride*6));
-    vec = svinsr_n_u32(vec, *(ptr + stride*5));
-    vec = svinsr_n_u32(vec, *(ptr + stride*4));
-    vec = svinsr_n_u32(vec, *(ptr + stride*3));
-    vec = svinsr_n_u32(vec, *(ptr + stride*2));
-    vec = svinsr_n_u32(vec, *(ptr + stride*1));
-    vec = svinsr_n_u32(vec, *(ptr + stride*0));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 15));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 14));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 13));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 12));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 11));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 10));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 9));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 8));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 7));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 6));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 5));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 4));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 3));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 2));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 1));
+    vec = svinsr_n_u32(vec, *(ptr + stride * 0));
     return vec;
 #endif
 }
@@ -126,34 +125,33 @@ npyv_loadn_u64(const npy_uint64 *ptr, npy_intp stride)
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b64();
     const svint64_t steps = svindex_s64(0, 1);
-    const svint64_t idx =
-      svmul_n_s64_x(mask_all, steps, stride);
+    const svint64_t idx = svmul_n_s64_x(mask_all, steps, stride);
 
     return svld1_gather_s64index_u64(mask_all, ptr, idx);
 #else
     svuint64_t vec;
-    vec = svinsr_n_u64(vec, *(ptr + stride*7));
-    vec = svinsr_n_u64(vec, *(ptr + stride*6));
-    vec = svinsr_n_u64(vec, *(ptr + stride*5));
-    vec = svinsr_n_u64(vec, *(ptr + stride*4));
-    vec = svinsr_n_u64(vec, *(ptr + stride*3));
-    vec = svinsr_n_u64(vec, *(ptr + stride*2));
-    vec = svinsr_n_u64(vec, *(ptr + stride*1));
-    vec = svinsr_n_u64(vec, *(ptr + stride*0));
+    vec = svinsr_n_u64(vec, *(ptr + stride * 7));
+    vec = svinsr_n_u64(vec, *(ptr + stride * 6));
+    vec = svinsr_n_u64(vec, *(ptr + stride * 5));
+    vec = svinsr_n_u64(vec, *(ptr + stride * 4));
+    vec = svinsr_n_u64(vec, *(ptr + stride * 3));
+    vec = svinsr_n_u64(vec, *(ptr + stride * 2));
+    vec = svinsr_n_u64(vec, *(ptr + stride * 1));
+    vec = svinsr_n_u64(vec, *(ptr + stride * 0));
     return vec;
-#endif    
+#endif
 }
 NPY_FINLINE npyv_s64
 npyv_loadn_s64(const npy_int64 *ptr, npy_intp stride)
 {
     return svreinterpret_s64_u64(
-    npyv_loadn_u64((const npy_uint64 *)ptr, stride));
+            npyv_loadn_u64((const npy_uint64 *)ptr, stride));
 }
 NPY_FINLINE npyv_f64
 npyv_loadn_f64(const double *ptr, npy_intp stride)
 {
-  return svreinterpret_f64_u64(
-	npyv_loadn_u64((const npy_uint64 *)ptr, stride));
+    return svreinterpret_f64_u64(
+            npyv_loadn_u64((const npy_uint64 *)ptr, stride));
 }
 /***************************
  * Non-contiguous Store
@@ -165,8 +163,7 @@ npyv_storen_u32(npy_uint32 *ptr, npy_intp stride, npyv_u32 a)
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b32();
     const svint32_t steps = svindex_s32(0, 1);
-    const svint32_t idx =
-      svmul_n_s32_x(mask_all, steps, stride);
+    const svint32_t idx = svmul_n_s32_x(mask_all, steps, stride);
 
     svst1_scatter_s32index_u32(mask_all, ptr, idx, a);
 }
@@ -187,8 +184,7 @@ npyv_storen_u64(npy_uint64 *ptr, npy_intp stride, npyv_u64 a)
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b64();
     const svint64_t steps = svindex_s64(0, 1);
-    const svint64_t idx =
-      svmul_n_s64_x(mask_all, steps, stride);
+    const svint64_t idx = svmul_n_s64_x(mask_all, steps, stride);
 
     svst1_scatter_s64index_u64(mask_all, ptr, idx, a);
 }
@@ -301,7 +297,7 @@ npyv_load_till_f64(const npy_float64 *ptr, npy_uintp nlane, npy_int64 fill)
         return svsel_f64(mask, svld1_f64(mask, ptr), vfill);
     }
 }
-#endif // #if 0
+#endif  // #if 0
 /*********************************
  * Non-contiguous partial load
  *********************************/
@@ -314,8 +310,7 @@ npyv_loadn_till_s32(const npy_int32 *ptr, npy_intp stride, npy_uintp nlane,
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b32();
     const svint32_t steps = svindex_s32(0, 1);
-    const svint32_t idx =
-      svmul_n_s32_x(mask_all, steps, stride);
+    const svint32_t idx = svmul_n_s32_x(mask_all, steps, stride);
 
     if (nlane == NPY_SIMD_WIDTH / sizeof(int32_t)) {
         return svld1_gather_s32index_s32(mask_all, ptr, idx);
@@ -343,8 +338,7 @@ npyv_loadn_till_s64(const npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b64();
     const svint64_t steps = svindex_s64(0, 1);
-    const svint64_t idx =
-      svmul_n_s64_x(mask_all, steps, stride);
+    const svint64_t idx = svmul_n_s64_x(mask_all, steps, stride);
 
     if (nlane == NPY_SIMD_WIDTH / sizeof(int64_t)) {
         return svld1_gather_s64index_s64(mask_all, ptr, idx);
@@ -393,7 +387,7 @@ npyv_store_till_s64(npy_int64 *ptr, npy_uintp nlane, npyv_s64 a)
     else {
         const svint64_t idx = svindex_s64(0, 1);
         const svbool_t mask = svcmplt_n_s64(mask_all, idx, nlane);
-	svst1_s64(mask, ptr, a);
+        svst1_s64(mask, ptr, a);
     }
 }
 /*********************************
@@ -408,8 +402,7 @@ npyv_storen_till_s32(npy_int32 *ptr, npy_intp stride, npy_uintp nlane,
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b32();
     const svint32_t steps = svindex_s32(0, 1);
-    const svint32_t idx =
-      svmul_n_s32_x(mask_all, steps, stride);
+    const svint32_t idx = svmul_n_s32_x(mask_all, steps, stride);
 
     if (nlane == NPY_SIMD_WIDTH / sizeof(int32_t)) {
         svst1_scatter_s32index_s32(mask_all, ptr, idx, a);
@@ -429,8 +422,7 @@ npyv_storen_till_s64(npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b64();
     const svint64_t steps = svindex_s64(0, 1);
-    const svint64_t idx =
-      svmul_n_s64_x(mask_all, steps, stride);
+    const svint64_t idx = svmul_n_s64_x(mask_all, steps, stride);
 
     if (nlane == NPY_SIMD_WIDTH / sizeof(int64_t)) {
         svst1_scatter_s64index_s64(mask_all, ptr, idx, a);
@@ -506,38 +498,56 @@ NPYV_IMPL_SVE_REST_PARTIAL_TYPES(f64, s64)
  *************************************************/
 // uses vector as indexes into a table
 // that contains 32 elements of float32.
-NPY_FINLINE npyv_f32 npyv_lut32_f32(const float *table, npyv_u32 idx)
+NPY_FINLINE npyv_f32
+npyv_lut32_f32(const float *table, npyv_u32 idx)
 {
     const svbool_t mask_all = svptrue_b32();
     const npyv_u32 t_idx = svand_n_u32_m(mask_all, idx, 0xf);
     const npyv_f32 table0 = npyv_load_f32(table);
     const npyv_f32 table1 = npyv_load_f32(table + 16);
-    const svbool_t mask = svcmpne_n_u32(mask_all, svand_n_u32_m(mask_all, idx, 1<<4), 0);
+    const svbool_t mask =
+            svcmpne_n_u32(mask_all, svand_n_u32_m(mask_all, idx, 1 << 4), 0);
     npyv_f32 t0 = svtbl_f32(table0, t_idx);
     npyv_f32 t1 = svtbl_f32(table1, t_idx);
     return svsel_f32(mask, table1, table0);
 }
-NPY_FINLINE npyv_u32 npyv_lut32_u32(const npy_uint32 *table, npyv_u32 idx)
-{ return npyv_reinterpret_u32_f32(npyv_lut32_f32((const float*)table, idx)); }
-NPY_FINLINE npyv_s32 npyv_lut32_s32(const npy_int32 *table, npyv_u32 idx)
-{ return npyv_reinterpret_s32_f32(npyv_lut32_f32((const float*)table, idx)); }
+NPY_FINLINE npyv_u32
+npyv_lut32_u32(const npy_uint32 *table, npyv_u32 idx)
+{
+    return npyv_reinterpret_u32_f32(npyv_lut32_f32((const float *)table, idx));
+}
+NPY_FINLINE npyv_s32
+npyv_lut32_s32(const npy_int32 *table, npyv_u32 idx)
+{
+    return npyv_reinterpret_s32_f32(npyv_lut32_f32((const float *)table, idx));
+}
 
 // uses vector as indexes into a table
 // that contains 16 elements of float64.
-NPY_FINLINE npyv_f64 npyv_lut16_f64(const double *table, npyv_u64 idx)
+NPY_FINLINE npyv_f64
+npyv_lut16_f64(const double *table, npyv_u64 idx)
 {
     const svbool_t mask_all = svptrue_b64();
     const npyv_u64 t_idx = svand_n_u64_m(mask_all, idx, 0x7);
     const npyv_f64 table0 = npyv_load_f64(table);
     const npyv_f64 table1 = npyv_load_f64(table + 8);
-    const svbool_t mask = svcmpne_n_u64(mask_all, svand_n_u64_m(mask_all, idx, 1<<3), 0);
+    const svbool_t mask =
+            svcmpne_n_u64(mask_all, svand_n_u64_m(mask_all, idx, 1 << 3), 0);
     npyv_f64 t0 = svtbl_f64(table0, t_idx);
     npyv_f64 t1 = svtbl_f64(table1, t_idx);
     return svsel_f64(mask, t1, t0);
 }
-NPY_FINLINE npyv_u64 npyv_lut16_u64(const npy_uint64 *table, npyv_u64 idx)
-{ return npyv_reinterpret_u64_f64(npyv_lut16_f64((const double*)table, idx)); }
-NPY_FINLINE npyv_s64 npyv_lut16_s64(const npy_int64 *table, npyv_u64 idx)
-{ return npyv_reinterpret_s64_f64(npyv_lut16_f64((const double*)table, idx)); }
+NPY_FINLINE npyv_u64
+npyv_lut16_u64(const npy_uint64 *table, npyv_u64 idx)
+{
+    return npyv_reinterpret_u64_f64(
+            npyv_lut16_f64((const double *)table, idx));
+}
+NPY_FINLINE npyv_s64
+npyv_lut16_s64(const npy_int64 *table, npyv_u64 idx)
+{
+    return npyv_reinterpret_s64_f64(
+            npyv_lut16_f64((const double *)table, idx));
+}
 
 #endif  // _NPY_SIMD_SVE_MEMORY_H

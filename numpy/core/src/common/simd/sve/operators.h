@@ -9,10 +9,13 @@
  * Shifting
  ***************************/
 // left
-#define NPYV_IMPL_SVE_SHIFT_L(SIGN, WIDTH) \
-NPY_FINLINE npyv_ ## SIGN ## WIDTH npyv_shl_ ## SIGN ## WIDTH (npyv_ ## SIGN ## WIDTH A, npy_uintp C) {	\
-  return svlsl_ ## SIGN ## WIDTH ## _x(svptrue_b ## WIDTH (), A, svdup_n_u ## WIDTH (C)); \
-}
+#define NPYV_IMPL_SVE_SHIFT_L(SIGN, WIDTH)                    \
+    NPY_FINLINE npyv_##SIGN##WIDTH npyv_shl_##SIGN##WIDTH(    \
+            npyv_##SIGN##WIDTH A, npy_uintp C)                \
+    {                                                         \
+        return svlsl_##SIGN##WIDTH##_x(svptrue_b##WIDTH(), A, \
+                                       svdup_n_u##WIDTH(C));  \
+    }
 
 NPYV_IMPL_SVE_SHIFT_L(u, 8)
 NPYV_IMPL_SVE_SHIFT_L(u, 16)
@@ -24,13 +27,17 @@ NPYV_IMPL_SVE_SHIFT_L(s, 32)
 NPYV_IMPL_SVE_SHIFT_L(s, 64)
 
 // left by an immediate constant
-#define NPYV_IMPL_SVE_SHIFT_L_IMM(WIDTH) \
-  NPY_FINLINE npyv_u ## WIDTH npyv_shli_u ## WIDTH (npyv_u ## WIDTH A, npy_uint ## WIDTH C) { \
-  return svlsl_n_u ## WIDTH ## _x(svptrue_b ## WIDTH (), A, C); \
-} \
-  NPY_FINLINE npyv_s ## WIDTH npyv_shli_s ## WIDTH (npyv_s ## WIDTH A, npy_uint ## WIDTH C) { \
-  return svlsl_n_s ## WIDTH ## _x(svptrue_b ## WIDTH (), A, C); \
-}
+#define NPYV_IMPL_SVE_SHIFT_L_IMM(WIDTH)                            \
+    NPY_FINLINE npyv_u##WIDTH npyv_shli_u##WIDTH(npyv_u##WIDTH A,   \
+                                                 npy_uint##WIDTH C) \
+    {                                                               \
+        return svlsl_n_u##WIDTH##_x(svptrue_b##WIDTH(), A, C);      \
+    }                                                               \
+    NPY_FINLINE npyv_s##WIDTH npyv_shli_s##WIDTH(npyv_s##WIDTH A,   \
+                                                 npy_uint##WIDTH C) \
+    {                                                               \
+        return svlsl_n_s##WIDTH##_x(svptrue_b##WIDTH(), A, C);      \
+    }
 
 NPYV_IMPL_SVE_SHIFT_L_IMM(8)
 NPYV_IMPL_SVE_SHIFT_L_IMM(16)
@@ -38,13 +45,17 @@ NPYV_IMPL_SVE_SHIFT_L_IMM(32)
 NPYV_IMPL_SVE_SHIFT_L_IMM(64)
 
 // right
-#define NPYV_IMPL_SVE_SHIFT_R(WIDTH) \
-NPY_FINLINE npyv_u ## WIDTH npyv_shr_u ## WIDTH (npyv_u ## WIDTH A, npy_intp C) {	\
-  return svlsr_u ## WIDTH ## _x(svptrue_b ## WIDTH (), A, svdup_n_u ## WIDTH (C)); \
-} \
-NPY_FINLINE npyv_s ## WIDTH npyv_shr_s ## WIDTH (npyv_s ## WIDTH A, npy_intp C) {	\
-  return svasr_s ## WIDTH ## _x(svptrue_b ## WIDTH (), A, svdup_n_u ## WIDTH (C)); \
-}
+#define NPYV_IMPL_SVE_SHIFT_R(WIDTH)                                         \
+    NPY_FINLINE npyv_u##WIDTH npyv_shr_u##WIDTH(npyv_u##WIDTH A, npy_intp C) \
+    {                                                                        \
+        return svlsr_u##WIDTH##_x(svptrue_b##WIDTH(), A,                     \
+                                  svdup_n_u##WIDTH(C));                      \
+    }                                                                        \
+    NPY_FINLINE npyv_s##WIDTH npyv_shr_s##WIDTH(npyv_s##WIDTH A, npy_intp C) \
+    {                                                                        \
+        return svasr_s##WIDTH##_x(svptrue_b##WIDTH(), A,                     \
+                                  svdup_n_u##WIDTH(C));                      \
+    }
 
 NPYV_IMPL_SVE_SHIFT_R(8)
 NPYV_IMPL_SVE_SHIFT_R(16)
@@ -52,13 +63,17 @@ NPYV_IMPL_SVE_SHIFT_R(32)
 NPYV_IMPL_SVE_SHIFT_R(64)
 
 // right by an immediate constant
-#define NPYV_IMPL_SVE_SHIFT_R_IMM(WIDTH) \
-  NPY_FINLINE npyv_u ## WIDTH npyv_shri_u ## WIDTH (npyv_u ## WIDTH A, npy_uint ## WIDTH C) { \
-  return svlsr_n_u ## WIDTH ## _x(svptrue_b ## WIDTH (), A, C); \
-} \
-  NPY_FINLINE npyv_s ## WIDTH npyv_shri_s ## WIDTH (npyv_s ## WIDTH A, npy_uint ## WIDTH C) { \
-  return svasr_n_s ## WIDTH ## _x(svptrue_b ## WIDTH (), A, C); \
-}
+#define NPYV_IMPL_SVE_SHIFT_R_IMM(WIDTH)                            \
+    NPY_FINLINE npyv_u##WIDTH npyv_shri_u##WIDTH(npyv_u##WIDTH A,   \
+                                                 npy_uint##WIDTH C) \
+    {                                                               \
+        return svlsr_n_u##WIDTH##_x(svptrue_b##WIDTH(), A, C);      \
+    }                                                               \
+    NPY_FINLINE npyv_s##WIDTH npyv_shri_s##WIDTH(npyv_s##WIDTH A,   \
+                                                 npy_uint##WIDTH C) \
+    {                                                               \
+        return svasr_n_s##WIDTH##_x(svptrue_b##WIDTH(), A, C);      \
+    }
 
 NPYV_IMPL_SVE_SHIFT_R_IMM(8)
 NPYV_IMPL_SVE_SHIFT_R_IMM(16)

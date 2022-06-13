@@ -56,13 +56,13 @@ npyv_square_f64(npyv_f64 a)
     return svmul_f64_x(svptrue_b64(), a, a);
 }
 
-
 // Maximum, natively mapping with no guarantees to handle NaN.
 #define npyv_max_f32(A, B) svmax_f32_x(svptrue_b32(), A, B)
 #define npyv_max_f64(A, B) svmax_f64_x(svptrue_b64(), A, B)
 // Maximum, supports IEEE floating-point arithmetic (IEC 60559),
-// - If one of the two vectors contains NaN, the equivalent element of the other vector is set
-// - Only if both corresponded elements are NaN, NaN is set. 
+// - If one of the two vectors contains NaN, the equivalent element of the
+// other vector is set
+// - Only if both corresponded elements are NaN, NaN is set.
 #define npyv_maxp_f32(A, B) svmaxnm_f32_x(svptrue_b32(), A, B)
 #define npyv_maxp_f64(A, B) svmaxnm_f64_x(svptrue_b64(), A, B)
 
@@ -80,8 +80,9 @@ npyv_square_f64(npyv_f64 a)
 #define npyv_min_f32(A, B) svmin_f32_x(svptrue_b32(), A, B)
 #define npyv_min_f64(A, B) svmin_f64_x(svptrue_b64(), A, B)
 // Minimum, supports IEEE floating-point arithmetic (IEC 60559),
-// - If one of the two vectors contains NaN, the equivalent element of the other vector is set
-// - Only if both corresponded elements are NaN, NaN is set. 
+// - If one of the two vectors contains NaN, the equivalent element of the
+// other vector is set
+// - Only if both corresponded elements are NaN, NaN is set.
 #define npyv_minp_f32(A, B) svminnm_f32_x(svptrue_b32(), A, B)
 #define npyv_minp_f64(A, B) svminnm_f64_x(svptrue_b64(), A, B)
 
