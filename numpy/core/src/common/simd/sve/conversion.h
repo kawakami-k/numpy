@@ -267,7 +267,7 @@ npyv_round_s32_f64(npyv_f64 a, npyv_f64 b)
     svfloat64_t b_rinti = svrinti_f64_x(svptrue_b64(), b);
     svint32_t a_cvt = svcvt_s32_f64_x(svptrue_b64(), a_rinti);
     svint32_t b_cvt = svcvt_s32_f64_x(svptrue_b64(), b_rinti);
-    return svzip1_s32(a_cvt, b_cvt);
+    return svuzp1_s32(a_cvt, b_cvt);
 }
 
 #endif  // _NPY_SIMD_SVE_CVT_H
