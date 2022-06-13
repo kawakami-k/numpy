@@ -192,20 +192,18 @@ npyv_mul_f64(npyv_f64 a, npyv_f64 b)
 
 // mulhi: high part of unsigned multiplication
 // floor(a/d)      = (mulhi + ((a-mulhi) >> sh1)) >> sh2
-#define NPYV_IMPL_SVE_DIVC_U(WIDTH)                                           \
-    NPY_FINLINE npyv_u##WIDTH npyv_divc_u##WIDTH(                             \
-            npyv_u##WIDTH a, const npyv_u##WIDTH##x3 divisor)                 \
-    {                                                                         \
-        const svbool_t mask_all = svptrue_b##WIDTH();                         \
-        const svuint##WIDTH##_t divisor0 = svget3_u##WIDTH(divisor, 0);       \
-        const svuint##WIDTH##_t shf1 = svget3_u##WIDTH(divisor, 1);           \
-        const svuint##WIDTH##_t shf2 = svget3_u##WIDTH(divisor, 2);           \
-        svuint##WIDTH##_t mulhi = svmulh_u##WIDTH##_x(mask_all, a, divisor0); \
-        svuint##WIDTH##_t q = svsub_u##WIDTH##_x(mask_all, a, mulhi);         \
-        q = svlsr_u##WIDTH##_x(mask_all, q, shf1);                            \
-        q = svadd_u##WIDTH##_x(mask_all, mulhi, q);                           \
-        q = svlsr_u##WIDTH##_x(mask_all, q, shf2);                            \
-        return q;                                                             \
+#define NPYV_IMPL_SVE_DIVC_U(WIDTH)                                   \
+    NPY_FINLINE npyv_u##WIDTH npyv_divc_u##WIDTH(                     \
+            npyv_u##WIDTH a, const npyv_u##WIDTH##x3 divisor)         \
+    {                                                                 \
+        const svbool_t mask_all = svptrue_b##WIDTH();                 \
+        svuint##WIDTH##_t mulhi =                                     \
+                svmulh_u##WIDTH##_x(mask_all, a, divisor.val[0]);     \
+        svuint##WIDTH##_t q = svsub_u##WIDTH##_x(mask_all, a, mulhi); \
+        q = svlsr_u##WIDTH##_x(mask_all, q, divisor.val[1]);          \
+        q = svadd_u##WIDTH##_x(mask_all, mulhi, q);                   \
+        q = svlsr_u##WIDTH##_x(mask_all, q, divisor.val[2]);          \
+        return q;                                                     \
     }
 
 NPYV_IMPL_SVE_DIVC_U(8)
@@ -221,13 +219,12 @@ NPYV_IMPL_SVE_DIVC_U(64)
             npyv_s##WIDTH a, const npyv_s##WIDTH##x3 divisor)                 \
     {                                                                         \
         const svbool_t mask_all = svptrue_b##WIDTH();                         \
-        const svuint##WIDTH##_t shf1 = svreinterpret_u##WIDTH##_s##WIDTH(     \
-                svget3_s##WIDTH(divisor, 1));                                 \
-        const svint##WIDTH##_t dsign = svget3_s##WIDTH(divisor, 2);           \
-        svint##WIDTH##_t mulhi = svmulh_s##WIDTH##_x(                         \
-                mask_all, a, svget3_s##WIDTH(divisor, 0));                    \
+        const svint##WIDTH##_t dsign = divisor.val[2];                        \
+        svint##WIDTH##_t mulhi =                                              \
+                svmulh_s##WIDTH##_x(mask_all, a, divisor.val[0]);             \
         svint##WIDTH##_t q = svasr_s##WIDTH##_x(                              \
-                mask_all, svadd_s##WIDTH##_x(mask_all, a, mulhi), shf1);      \
+                mask_all, svadd_s##WIDTH##_x(mask_all, a, mulhi),             \
+                svreinterpret_u##WIDTH##_s##WIDTH(divisor.val[1]));           \
         q = svsub_s##WIDTH##_x(mask_all, q,                                   \
                                svasr_n_s##WIDTH##_x(mask_all, a, WIDTH - 1)); \
         q = svsub_s##WIDTH##_x(                                               \

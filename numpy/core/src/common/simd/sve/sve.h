@@ -6,7 +6,7 @@
 #define NPY_SIMD_WIDTH 64
 #define NPY_SIMD_F64 1
 #define NPY_SIMD_FMA3 1
-// Enough limit to allow us to use _mm512_i32gather_* and _mm512_i32scatter_*
+
 #define NPY_SIMD_MAXLOAD_STRIDE32 (0x7fffffff / 16)
 #define NPY_SIMD_MAXSTORE_STRIDE32 (0x7fffffff / 16)
 
@@ -14,39 +14,58 @@
 
 typedef svbool_t __pred __SVE_ATTRIBUTE_SIZE_;
 
-#define NPYV_IMPL_SVE_TYPE(TYPE, S)                           \
-    typedef sv##TYPE##8 __sve_##S##8 __SVE_ATTRIBUTE_SIZE_;   \
-    typedef sv##TYPE##16 __sve_##S##16 __SVE_ATTRIBUTE_SIZE_; \
-    typedef sv##TYPE##32 __sve_##S##32 __SVE_ATTRIBUTE_SIZE_; \
-    typedef sv##TYPE##64 __sve_##S##64 __SVE_ATTRIBUTE_SIZE_; \
-    typedef __sve_##S##8 npyv_##S##8;                         \
-    typedef __sve_##S##16 npyv_##S##16;                       \
-    typedef __sve_##S##32 npyv_##S##32;                       \
-    typedef __sve_##S##64 npyv_##S##64;
-
-#define NPYV_IMPL_SVE_TYPE_X(TYPE, S, X)                            \
-    typedef sv##TYPE##8##X __sve_##S##8##X __SVE_ATTRIBUTE_SIZE_;   \
-    typedef sv##TYPE##16##X __sve_##S##16##X __SVE_ATTRIBUTE_SIZE_; \
-    typedef sv##TYPE##32##X __sve_##S##32##X __SVE_ATTRIBUTE_SIZE_; \
-    typedef sv##TYPE##64##X __sve_##S##64##X __SVE_ATTRIBUTE_SIZE_; \
-    typedef __sve_##S##8##X npyv_##S##8##X;                         \
-    typedef __sve_##S##16##X npyv_##S##16##X;                       \
-    typedef __sve_##S##32##X npyv_##S##32##X;                       \
-    typedef __sve_##S##64##X npyv_##S##64##X;
+#define NPYV_IMPL_SVE_TYPE(TYPE, S)                            \
+    typedef sv##TYPE##8_t npyv_##S##8 __SVE_ATTRIBUTE_SIZE_;   \
+    typedef sv##TYPE##16_t npyv_##S##16 __SVE_ATTRIBUTE_SIZE_; \
+    typedef sv##TYPE##32_t npyv_##S##32 __SVE_ATTRIBUTE_SIZE_; \
+    typedef sv##TYPE##64_t npyv_##S##64 __SVE_ATTRIBUTE_SIZE_;
 
 NPYV_IMPL_SVE_TYPE(uint, u)
-NPYV_IMPL_SVE_TYPE_X(uint, u, x2)
-NPYV_IMPL_SVE_TYPE_X(uint, u, x3)
 NPYV_IMPL_SVE_TYPE(int, s)
-NPYV_IMPL_SVE_TYPE_X(int, s, x2)
-NPYV_IMPL_SVE_TYPE_X(int, s, x3)
 
-typedef svfloat32_t __sve_f32 __SVE_ATTRIBUTE_SIZE_;
-typedef svfloat32x2_t __sve_f32x2 __SVE_ATTRIBUTE_SIZE_;
-typedef svfloat32x3_t __sve_f32x3 __SVE_ATTRIBUTE_SIZE_;
-typedef svfloat64_t __sve_f64 __SVE_ATTRIBUTE_SIZE_;
-typedef svfloat64x2_t __sve_f64x2 __SVE_ATTRIBUTE_SIZE_;
-typedef svfloat64x3_t __sve_f64x3 __SVE_ATTRIBUTE_SIZE_;
+#define NPYV_IMPL_SVE_TUPLE(TYPE, S) \
+    typedef struct {                 \
+        npyv_##S##8 val[2];          \
+    } npyv_##S##8x2;                 \
+    typedef struct {                 \
+        npyv_##S##16 val[2];         \
+    } npyv_##S##16x2;                \
+    typedef struct {                 \
+        npyv_##S##32 val[2];         \
+    } npyv_##S##32x2;                \
+    typedef struct {                 \
+        npyv_##S##64 val[2];         \
+    } npyv_##S##64x2;                \
+    typedef struct {                 \
+        npyv_##S##8 val[3];          \
+    } npyv_##S##8x3;                 \
+    typedef struct {                 \
+        npyv_##S##16 val[3];         \
+    } npyv_##S##16x3;                \
+    typedef struct {                 \
+        npyv_##S##32 val[3];         \
+    } npyv_##S##32x3;                \
+    typedef struct {                 \
+        npyv_##S##64 val[3];         \
+    } npyv_##S##64x3;
+
+NPYV_IMPL_SVE_TUPLE(uint, u)
+NPYV_IMPL_SVE_TUPLE(int, s)
+
+typedef svfloat32_t npyv_f32 __SVE_ATTRIBUTE_SIZE_;
+typedef svfloat64_t npyv_f64 __SVE_ATTRIBUTE_SIZE_;
+typedef struct {
+    npyv_f32 val[2];
+} npyv_f32x2;
+typedef struct {
+    npyv_f32 val[3];
+} npyv_f32x3;
+typedef struct {
+    npyv_f64 val[2];
+} npyv_f64x2;
+typedef struct {
+    npyv_f64 val[3];
+} npyv_f64x3;
 
 typedef __pred npyv_b8;
 typedef __pred npyv_b16;

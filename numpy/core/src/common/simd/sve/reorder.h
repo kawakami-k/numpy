@@ -48,14 +48,14 @@ NPYV_IMPL_SVE_COMBINEH(float32_t, f, 32, SV_VL8)
 NPYV_IMPL_SVE_COMBINEH(float64_t, f, 64, SV_VL4)
 
 // combine two vectors from lower and higher parts of two other vectors
-#define NPYV_IMPL_SVE_COMBINE(SIGN, BITS)                                \
-    NPY_FINLINE npyv_##SIGN##BITS##x2 npyv_combine_##SIGN##BITS(         \
-            npyv_##SIGN##BITS a, npyv_##SIGN##BITS b)                    \
-    {                                                                    \
-        npyv_##SIGN##BITS##x2 r = svundef2_##SIGN##BITS();               \
-        r = svset2_##SIGN##BITS(r, 0, npyv_combinel_##SIGN##BITS(a, b)); \
-        r = svset2_##SIGN##BITS(r, 1, npyv_combineh_##SIGN##BITS(a, b)); \
-        return r;                                                        \
+#define NPYV_IMPL_SVE_COMBINE(SIGN, BITS)                        \
+    NPY_FINLINE npyv_##SIGN##BITS##x2 npyv_combine_##SIGN##BITS( \
+            npyv_##SIGN##BITS a, npyv_##SIGN##BITS b)            \
+    {                                                            \
+        npyv_##SIGN##BITS##x2 r;                                 \
+        r.val[0] = npyv_combinel_##SIGN##BITS(a, b);             \
+        r.val[1] = npyv_combineh_##SIGN##BITS(a, b);             \
+        return r;                                                \
     }
 
 NPYV_IMPL_SVE_COMBINE(u, 8)
@@ -74,13 +74,13 @@ NPYV_IMPL_SVE_COMBINE(f, 64)
     NPY_FINLINE npyv_##SIGN##BITS##x2 npyv_zip_##SIGN##BITS(                 \
             npyv_##SIGN##BITS a, npyv_##SIGN##BITS b)                        \
     {                                                                        \
-        npyv_##SIGN##BITS##x2 r = svundef2_##SIGN##BITS();                   \
-        r = svset2_##SIGN##BITS(r, 0, svzip1_##SIGN##BITS(a, b));            \
+        npyv_##SIGN##BITS##x2 r;                                             \
+        r.val[0] = svzip1_##SIGN##BITS(a, b);                                \
         sv##TYPE t0 =                                                        \
                 svext_##SIGN##BITS(a, a, NPY_SIMD_WIDTH / sizeof(TYPE) / 2); \
         sv##TYPE t1 =                                                        \
                 svext_##SIGN##BITS(b, b, NPY_SIMD_WIDTH / sizeof(TYPE) / 2); \
-        r = svset2_##SIGN##BITS(r, 1, svzip1_##SIGN##BITS(t0, t1));          \
+        r.val[1] = svzip1_##SIGN##BITS(t0, t1);                              \
         return r;                                                            \
     }
 
@@ -103,6 +103,8 @@ NPYV_IMPL_SVE_ZIP(float64_t, f, 64)
 #define npyv_rev64_s8 svrev_s8
 #define npyv_rev64_s16 svrev_s16
 #define npyv_rev64_s32 svrev_s32
-#define npyv_rev64_s64 svrev_sa64
+#define npyv_rev64_s64 svrev_s64
+#define npyv_rev64_f32 svrev_f32
+#define npyv_rev64_f64 svrev_f64
 
 #endif  // _NPY_SIMD_SVE_REORDER_H

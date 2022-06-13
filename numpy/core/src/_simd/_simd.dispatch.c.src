@@ -14,11 +14,8 @@
 //#########################################################################
 /**begin repeat
  * #sfx       = u8, s8, u16, s16, u32, s32, u64, s64, f32, f64#
- * #type      = uint8, int8, uint16, int16, uint32, int32, uint64, int64, float32, float64#
  * #bsfx      = b8, b8, b16, b16, b32, b32, b64, b64, b32, b64#
- * #esfx      = u16,s8, u32, s16, u32, s32, u64, s64, f32, f64#
- * #sign      = u,  s,  u,   s,   u,   s,   u,   s,   f,   f#
- * #size      = 8,  8,  16,  16,  32,  32,  64,  64,  32,  64#
+ * #esfx      = u16, s8, u32,s16, u32, s32, u64, s64, f32, f64#
  * #expand_sup= 1,  0,  1,   0,   0,   0,   0,   0,   0,   0#
  * #simd_sup  = 1,  1,  1,   1,   1,   1,   1,   1,   1,   NPY_SIMD_F64#
  * #fp_only   = 0,  0,  0,   0,   0,   0,   0,   0,   1,   1#
@@ -40,9 +37,8 @@
  ***************************/
 /**begin repeat1
  * # intrin = load, loada, loads, loadl#
- * # div = 1, 1, 1, 2#
-0 */
-SIMD_IMPL_INTRIN_1_LD(@intrin@_@sfx@, v@sfx@, q@sfx@, @type@, @sign@, @size@, @div@)
+ */
+SIMD_IMPL_INTRIN_1(@intrin@_@sfx@, v@sfx@, q@sfx@)
 /**end repeat1**/
 /**begin repeat1
  * # intrin = store, storea, stores, storel, storeh#
@@ -60,14 +56,7 @@ simd__intrin_@intrin@_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
     )) {
         return NULL;
     }
-#ifndef NPY_HAVE_SVE
     npyv_@intrin@_@sfx@(seq_arg.data.q@sfx@, vec_arg.data.v@sfx@);
-#else
-    sv@type@_t t = svld1_@sign@@size@(svptrue_b@size@(), (npyv_lanetype_@sfx@ *) &vec_arg.data.v@sfx@);
-    npyv_@intrin@_@sfx@(seq_arg.data.q@sfx@, t);
-//    for(int i=0; i<npyv_nlanes_@sfx@; i++)
-//        seq_arg.data.q@sfx@[i] = ((npyv_lanetype_@sfx@ *) &vec_arg.data.v@sfx@)[i];
-#endif
     // write-back
     if (simd_sequence_fill_iterable(seq_arg.obj, seq_arg.data.q@sfx@, simd_data_q@sfx@)) {
         simd_arg_free(&seq_arg);
@@ -83,8 +72,8 @@ simd__intrin_@intrin@_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
  ****************************************/
 #if @ncont_sup@
 // Partial Load
-SIMD_IMPL_INTRIN_3_LD(load_till_@sfx@, v@sfx@, q@sfx@, u32, @sfx@, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_2_LD(load_tillz_@sfx@, v@sfx@, q@sfx@, u32, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_3(load_till_@sfx@, v@sfx@, q@sfx@, u32, @sfx@)
+SIMD_IMPL_INTRIN_2(load_tillz_@sfx@, v@sfx@, q@sfx@, u32)
 
 // Partial Store
 static PyObject *
@@ -101,9 +90,8 @@ simd__intrin_store_till_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
     )) {
         return NULL;
     }
-    sv@type@_t t = svld1_@sign@@size@(svptrue_b@size@(), (npyv_lanetype_@sign@@size@ *) &vec_arg.data.v@sfx@);
     npyv_store_till_@sfx@(
-        seq_arg.data.q@sfx@, nlane_arg.data.u32, t
+        seq_arg.data.q@sfx@, nlane_arg.data.u32, vec_arg.data.v@sfx@
     );
     // write-back
     if (simd_sequence_fill_iterable(seq_arg.obj, seq_arg.data.q@sfx@, simd_data_q@sfx@)) {
@@ -161,7 +149,7 @@ simd__intrin_@intrin@_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
         );
         goto err;
     }
-    npyv_@sfx@ t = npyv_@intrin@_@sfx@(
+    npyv_@sfx@ rvec = npyv_@intrin@_@sfx@(
         seq_ptr, stride
     #if @till@
         , nlane_arg.data.u32
@@ -170,10 +158,8 @@ simd__intrin_@intrin@_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
         , fill_arg.data.@sfx@
     #endif
     );
-    simd_data rvec;
-    svst1_@sign@@size@(svptrue_b@size@(), (npyv_lanetype_@sign@@size@ *) &rvec, t);
     simd_arg ret = {
-        .dtype = simd_data_v@sfx@, .data = {.v@sfx@=rvec.v@sfx@}
+        .dtype = simd_data_v@sfx@, .data = {.v@sfx@=rvec}
     };
     simd_arg_free(&seq_arg);
     return simd_arg_to_obj(&ret);
@@ -226,13 +212,12 @@ simd__intrin_@intrin@_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
         );
         goto err;
     }
-    sv@type@_t t = svld1_@sign@@size@(svptrue_b@size@(), (npyv_lanetype_@sign@@size@ *) &vec_arg.data.v@sfx@);
     npyv_@intrin@_@sfx@(
         seq_ptr, stride
     #if @till@
         ,nlane_arg.data.u32
     #endif
-        ,t
+        ,vec_arg.data.v@sfx@
     );
     // write-back
     if (simd_sequence_fill_iterable(seq_arg.obj, seq_arg.data.q@sfx@, simd_data_q@sfx@)) {
@@ -247,28 +232,19 @@ err:
 /**end repeat1**/
 #endif // @ncont_sup@
 
-/****************************
- * Lookup tables
- ****************************/
-#if @size@ == 32
-SIMD_IMPL_INTRIN_2_LUT(lut32_@sfx@, v@sfx@, q@sfx@, vu@size@, @type@, @sign@, @size@)
-#endif
-#if @size@ == 64
-SIMD_IMPL_INTRIN_2_LUT(lut16_@sfx@, v@sfx@, q@sfx@, vu@size@, @type@, @sign@, @size@)
-#endif
 /***************************
  * Misc
  ***************************/
-SIMD_IMPL_INTRIN_0(zero_@sfx@, v@sfx@, 0)
-SIMD_IMPL_INTRIN_1_SETALL(setall_@sfx@, v@sfx@, @sfx@, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_3(select_@sfx@, v@sfx@, v@bsfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_0(zero_@sfx@, v@sfx@)
+SIMD_IMPL_INTRIN_1(setall_@sfx@, v@sfx@, @sfx@)
+SIMD_IMPL_INTRIN_3(select_@sfx@, v@sfx@, v@bsfx@, v@sfx@, v@sfx@)
 
 /**begin repeat1
  * #sfx_to     = u8, s8, u16, s16, u32, s32, u64, s64, f32, f64#
  * #simd_sup2  = 1,  1,  1,   1,   1,   1,   1,   1,   1,   NPY_SIMD_F64#
  */
 #if @simd_sup2@
-SIMD_IMPL_INTRIN_1(reinterpret_@sfx_to@_@sfx@, v@sfx_to@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(reinterpret_@sfx_to@_@sfx@, v@sfx_to@, v@sfx@)
 #endif // simd_sup2
 /**end repeat1**/
 
@@ -276,7 +252,6 @@ SIMD_IMPL_INTRIN_1(reinterpret_@sfx_to@_@sfx@, v@sfx_to@, v@sfx@, @type@, @sign@
  * special definition due to the nature of intrinsics
  * npyv_setf_@sfx@ and npy_set_@sfx@.
 */
-#ifndef NPY_HAVE_SVE
 /**begin repeat1
  * #intrin = setf, set#
  */
@@ -302,43 +277,6 @@ simd__intrin_@intrin@_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
     return (PyObject*)PySIMDVector_FromData(r, simd_data_v@sfx@);
 }
 /**end repeat1**/
-#else
-static PyObject *
-simd__intrin_set_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
-{
-    npyv_lanetype_@sfx@ *data = simd_sequence_from_iterable(args, simd_data_q@sfx@, npyv_nlanes_@sfx@);
-    if (data == NULL) {
-        return NULL;
-    }
-    simd_data r;
-    for(int i=0; i<npyv_nlanes_@sfx@; i++)
-        ((npyv_lanetype_@sfx@ *) &r)[i] = data[i];
-    simd_sequence_free(data);
-    return (PyObject*)PySIMDVector_FromData(r, simd_data_v@sfx@);
-}
-static PyObject *
-simd__intrin_setf_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
-{
-    npyv_lanetype_@sfx@ *data = simd_sequence_from_iterable(args, simd_data_q@sfx@, npyv_nlanes_@sfx@);
-    if (data == NULL) {
-        return NULL;
-    }
-    simd_data r;
-    sv@type@_t t = npyv_setf_@sfx@(
-        data[0],  data[1],  data[2],  data[3],  data[4],  data[5],  data[6],  data[7],
-        data[8],  data[9],  data[10], data[11], data[12], data[13], data[14], data[15],
-        data[16], data[17], data[18], data[19], data[20], data[21], data[22], data[23],
-        data[24], data[25], data[26], data[27], data[28], data[29], data[30], data[31],
-        data[32], data[33], data[34], data[35], data[36], data[37], data[38], data[39],
-        data[40], data[41], data[42], data[43], data[44], data[45], data[46], data[47],
-        data[48], data[49], data[50], data[51], data[52], data[53], data[54], data[55],
-        data[56], data[57], data[58], data[59], data[60], data[61], data[62], data[63],
-        data[64]); // for setf
-    svst1_@sfx@(svptrue_b@size@(), (npyv_lanetype_@sfx@ *) &r, t);
-    simd_sequence_free(data);
-    return (PyObject*)PySIMDVector_FromData(r, simd_data_v@sfx@);
-}
-#endif
 
 /***************************
  * Reorder
@@ -346,51 +284,51 @@ simd__intrin_setf_@sfx@(PyObject* NPY_UNUSED(self), PyObject *args)
 /**begin repeat1
  * # intrin = combinel, combineh#
  */
-SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 
 /**begin repeat1
  * # intrin = combine, zip#
  */
-SIMD_IMPL_INTRIN_X2_2(@intrin@_@sfx@, v@sfx@x2, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@x2, v@sfx@, v@sfx@)
 /**end repeat1**/
 
 #if @rev64_sup@
-SIMD_IMPL_INTRIN_1(rev64_@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(rev64_@sfx@, v@sfx@, v@sfx@)
 #endif
 
 /***************************
  * Operators
  ***************************/
 #if @shl_imm@ > 0
-SIMD_IMPL_INTRIN_2_SH(shl_@sfx@, v@sfx@, v@sfx@, u8, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_2_SH(shr_@sfx@, v@sfx@, v@sfx@, u8, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(shl_@sfx@, v@sfx@, v@sfx@, u8)
+SIMD_IMPL_INTRIN_2(shr_@sfx@, v@sfx@, v@sfx@, u8)
 // immediate constant
-SIMD_IMPL_INTRIN_2IMM(shli_@sfx@, v@sfx@, v@sfx@, @shl_imm@, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_2IMM(shri_@sfx@, v@sfx@, v@sfx@, @shr_imm@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2IMM(shli_@sfx@, v@sfx@, v@sfx@, @shl_imm@)
+SIMD_IMPL_INTRIN_2IMM(shri_@sfx@, v@sfx@, v@sfx@, @shr_imm@)
 #endif // shl_imm
 
 /**begin repeat1
  * #intrin = and, or, xor#
  */
-SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 
-SIMD_IMPL_INTRIN_1_NOT(not_@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(not_@sfx@, v@sfx@, v@sfx@)
 
 /**begin repeat1
  * #intrin = cmpeq, cmpneq, cmpgt, cmpge, cmplt, cmple#
  */
-SIMD_IMPL_INTRIN_2_MASK(@intrin@_@sfx@, v@bsfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@bsfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 
 /***************************
  * Conversion
  ***************************/
-SIMD_IMPL_INTRIN_1(cvt_@sfx@_@bsfx@, v@sfx@,  v@bsfx@, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_1(cvt_@bsfx@_@sfx@, v@bsfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(cvt_@sfx@_@bsfx@, v@sfx@,  v@bsfx@)
+SIMD_IMPL_INTRIN_1(cvt_@bsfx@_@sfx@, v@bsfx@, v@sfx@)
 #if @expand_sup@
-SIMD_IMPL_INTRIN_1(expand_@esfx@_@sfx@, v@esfx@x2, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(expand_@esfx@_@sfx@, v@esfx@x2, v@sfx@)
 #endif // expand_sup
 /***************************
  * Arithmetic
@@ -398,44 +336,44 @@ SIMD_IMPL_INTRIN_1(expand_@esfx@_@sfx@, v@esfx@x2, v@sfx@, @type@, @sign@, @size
 /**begin repeat1
  * #intrin = add, sub#
  */
-SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 
 #if @sat_sup@
 /**begin repeat1
  * #intrin = adds, subs#
  */
-SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 #endif // sat_sup
 
 #if @mul_sup@
-SIMD_IMPL_INTRIN_2(mul_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(mul_@sfx@, v@sfx@, v@sfx@, v@sfx@)
 #endif // mul_sup
 
 #if @div_sup@
-SIMD_IMPL_INTRIN_2(div_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(div_@sfx@, v@sfx@, v@sfx@, v@sfx@)
 #endif // div_sup
 
 #if @intdiv_sup@
-SIMD_IMPL_INTRIN_1(divisor_@sfx@, v@sfx@x3, @sfx@, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_2_DIVC(divc_@sfx@, v@sfx@, v@sfx@, v@sfx@x3, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(divisor_@sfx@, v@sfx@x3, @sfx@)
+SIMD_IMPL_INTRIN_2(divc_@sfx@, v@sfx@, v@sfx@, v@sfx@x3)
 #endif // intdiv_sup
 
 #if @fused_sup@
 /**begin repeat1
  * #intrin = muladd, mulsub, nmuladd, nmulsub#
  */
-SIMD_IMPL_INTRIN_3(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_3(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 #endif // fused_sup
 
 #if @sum_sup@
-SIMD_IMPL_INTRIN_1_SUM(sum_@sfx@, @sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(sum_@sfx@, @sfx@, v@sfx@)
 #endif // sum_sup
 
 #if @sumup_sup@
-SIMD_IMPL_INTRIN_1_SUM(sumup_@sfx@, @esfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(sumup_@sfx@, @esfx@, v@sfx@)
 #endif // sumup_sup
 
 /***************************
@@ -443,23 +381,23 @@ SIMD_IMPL_INTRIN_1_SUM(sumup_@sfx@, @esfx@, v@sfx@, @type@, @sign@, @size@)
  ***************************/
 #if @fp_only@
 /**begin repeat1
- * #intrin = sqrt, recip, abs, square, rint, ceil, trunc, floor#
+ * #intrin = sqrt, recip, abs, square, ceil, trunc#
  */
-SIMD_IMPL_INTRIN_1(@intrin@_@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_1(@intrin@_@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 #endif
 
 /**begin repeat1
  * #intrin = max, min#
  */
-SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 
 #if @fp_only@
 /**begin repeat1
  * #intrin = maxp, minp#
  */
-SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 #endif
 
@@ -469,7 +407,7 @@ SIMD_IMPL_INTRIN_2(@intrin@_@sfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size
 /**begin repeat1
  * #intrin = ifadd, ifsub#
  */
- SIMD_IMPL_INTRIN_4(@intrin@_@sfx@, v@sfx@, v@bsfx@, v@sfx@, v@sfx@, v@sfx@, @type@, @sign@, @size@)
+ SIMD_IMPL_INTRIN_4(@intrin@_@sfx@, v@sfx@, v@bsfx@, v@sfx@, v@sfx@, v@sfx@)
 /**end repeat1**/
 
 #endif // simd_sup
@@ -486,17 +424,17 @@ SIMD_IMPL_INTRIN_0N(cleanup)
  * Operators
  ***************************/
 // check special cases
-SIMD_IMPL_INTRIN_1(notnan_f32, vb32, vf32, float32, f, 32)
+SIMD_IMPL_INTRIN_1(notnan_f32, vb32, vf32)
 #if NPY_SIMD_F64
-    SIMD_IMPL_INTRIN_1(notnan_f64, vb64, vf64, float64, f, 64)
+    SIMD_IMPL_INTRIN_1(notnan_f64, vb64, vf64)
 #endif
 /***************************
  * Conversions
  ***************************/
 // round to nearest integer (assume even)
-SIMD_IMPL_INTRIN_1(round_s32_f32, vs32, vf32, float32, f, 32)
+SIMD_IMPL_INTRIN_1(round_s32_f32, vs32, vf32)
 #if NPY_SIMD_F64
-    SIMD_IMPL_INTRIN_2_ROUND(round_s32_f64, vs32, vf64, vf64, float64, f, 64, int32, s, 32)
+    SIMD_IMPL_INTRIN_2(round_s32_f64, vs32, vf64, vf64)
 #endif
 
 /*************************************************************************
@@ -508,14 +446,11 @@ SIMD_IMPL_INTRIN_1(round_s32_f32, vs32, vf32, float32, f, 32)
 // Logical
 /**begin repeat
  * #bsfx = b8, b16, b32, b64#
- * #type = uint8, uint16, uint32, uint64#
- * #sign = u, u, u, u#
- * #size = 8, 16, 32, 64#
  */
-SIMD_IMPL_INTRIN_B_2(and, v@bsfx@, v@bsfx@, v@bsfx@, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_B_2(or,  v@bsfx@, v@bsfx@, v@bsfx@, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_B_2(xor, v@bsfx@, v@bsfx@, v@bsfx@, @type@, @sign@, @size@)
-SIMD_IMPL_INTRIN_B_1(not, v@bsfx@, v@bsfx@, @type@, @sign@, @size@)
+SIMD_IMPL_INTRIN_2(and_@bsfx@, v@bsfx@, v@bsfx@, v@bsfx@)
+SIMD_IMPL_INTRIN_2(or_@bsfx@,  v@bsfx@, v@bsfx@, v@bsfx@)
+SIMD_IMPL_INTRIN_2(xor_@bsfx@, v@bsfx@, v@bsfx@, v@bsfx@)
+SIMD_IMPL_INTRIN_1(not_@bsfx@, v@bsfx@, v@bsfx@)
 /**end repeat**/
 /***************************
  * Conversions
@@ -524,7 +459,7 @@ SIMD_IMPL_INTRIN_B_1(not, v@bsfx@, v@bsfx@, @type@, @sign@, @size@)
 /**begin repeat
  * #bsfx = b8, b16, b32, b64#
  */
-SIMD_IMPL_INTRIN_1(tobits_@bsfx@, u64, v@bsfx@, uint64, u, 64)
+SIMD_IMPL_INTRIN_1(tobits_@bsfx@, u64, v@bsfx@)
 /**end repeat**/
 
 
@@ -535,9 +470,8 @@ static PyMethodDef simd__intrinsics_methods[] = {
 /**begin repeat
  * #sfx       = u8, s8, u16, s16, u32, s32, u64, s64, f32, f64#
  * #bsfx      = b8, b8, b16, b16, b32, b32, b64, b64, b32, b64#
- * #esfx      = u16,s8, u32, s16, u32, s32, u64, s64, f32, f64#
- * #size      = 8,  8,  16,  16,  32,  32,  64,  64,  32,  64#
- * #expand_sup= 1,  0,  1,   0,   0,   0,   0,   0,   0,   0#
+ * #esfx      = u16, s8, u32,s16, u32, s32, u64, s64, f32, f64#
+ * #expand_sup =1,  0,  1,   0,   0,   0,   0,   0,   0,   0#
  * #simd_sup  = 1,  1,  1,   1,   1,   1,   1,   1,   1,   NPY_SIMD_F64#
  * #fp_only   = 0,  0,  0,   0,   0,   0,   0,   0,   1,   1#
  * #sat_sup   = 1,  1,  1,   1,   0,   0,   0,   0,   0,   0#
@@ -575,15 +509,6 @@ SIMD_INTRIN_DEF(@intrin@_@sfx@)
 /**end repeat1**/
 #endif // ncont_sup
 
-/****************************
- * Lookup tables
- ****************************/
-#if @size@ == 32
-SIMD_INTRIN_DEF(lut32_@sfx@)
-#endif
-#if @size@ == 64
-SIMD_INTRIN_DEF(lut16_@sfx@)
-#endif
 /***************************
  * Misc
  ***************************/
@@ -690,7 +615,7 @@ SIMD_INTRIN_DEF(sumup_@sfx@)
  ***************************/
 #if @fp_only@
 /**begin repeat1
- * #intrin = sqrt, recip, abs, square, rint, ceil, trunc, floor#
+ * #intrin = sqrt, recip, abs, square, ceil, trunc#
  */
 SIMD_INTRIN_DEF(@intrin@_@sfx@)
 /**end repeat1**/

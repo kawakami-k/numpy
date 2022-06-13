@@ -19,12 +19,9 @@ SVE_CVT_MASK(s8, b8)
 SVE_CVT_MASK(s16, b16)
 SVE_CVT_MASK(s32, b32)
 SVE_CVT_MASK(s64, b64)
+SVE_CVT_MASK(f32, b32)
+SVE_CVT_MASK(f64, b64)
 #undef SVE_CVT_MASK
-
-#if 0
-#define npyv_cvt_f32_b32(BL) _mm512_castsi512_ps(npyv_cvt_u32_b32(BL))
-#define npyv_cvt_f64_b64(BL) _mm512_castsi512_pd(npyv_cvt_u64_b64(BL))
-#endif  // #if 0
 
 // convert integer vectors to mask
 //#define npyv_cvt_b8_u8 _mm512_movepi8_mask
@@ -83,26 +80,22 @@ npyv_cvt_b64_f64(npyv_f64 a)
 NPY_FINLINE npyv_u16x2
 npyv_expand_u16_u8(npyv_u8 data)
 {
-    npyv_u16x2 r = svundef2_u16();
+    npyv_u16x2 r;
     svuint8_t lo = svzip1_u8(data, data);
     svuint8_t hi = svzip2_u8(data, data);
-    r = svset2_u16(r, 0,
-                   svextb_u16_x(svptrue_b16(), svreinterpret_u16_u8(lo)));
-    r = svset2_u16(r, 1,
-                   svextb_u16_x(svptrue_b16(), svreinterpret_u16_u8(hi)));
+    r.val[0] = svextb_u16_x(svptrue_b16(), svreinterpret_u16_u8(lo));
+    r.val[1] = svextb_u16_x(svptrue_b16(), svreinterpret_u16_u8(hi));
     return r;
 }
 
 NPY_FINLINE npyv_u32x2
 npyv_expand_u32_u16(npyv_u16 data)
 {
-    npyv_u32x2 r = svundef2_u32();
+    npyv_u32x2 r;
     svuint16_t lo = svzip1_u16(data, data);
     svuint16_t hi = svzip2_u16(data, data);
-    r = svset2_u32(r, 0,
-                   svexth_u32_x(svptrue_b32(), svreinterpret_u32_u16(lo)));
-    r = svset2_u32(r, 1,
-                   svexth_u32_x(svptrue_b32(), svreinterpret_u32_u16(hi)));
+    r.val[0] = svexth_u32_x(svptrue_b32(), svreinterpret_u32_u16(lo));
+    r.val[1] = svexth_u32_x(svptrue_b32(), svreinterpret_u32_u16(hi));
     return r;
 }
 
@@ -169,6 +162,7 @@ npyv_tobits_b8(npyv_b8 A)
             retVal = svorv_u64(h_h, idx3);
             break;
         case 64:
+            retVal |= svorv_u64(l_l_l, idx0);
             retVal |= svorv_u64(l_l_h, idx1);
             retVal |= svorv_u64(l_h_l, idx2);
             retVal |= svorv_u64(l_h_h, idx3);

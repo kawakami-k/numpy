@@ -206,15 +206,10 @@ NPY_FINLINE npyv_u8x3 npyv_divisor_u8(npy_uint8 d)
     divisor.val[0] = npyv_setall_u16(m);
     divisor.val[1] = npyv_set_u8(sh1);
     divisor.val[2] = npyv_set_u8(sh2);
-#elif defined(NPY_HAVE_VSX2)
+#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
     divisor.val[0] = npyv_setall_u8(m);
     divisor.val[1] = npyv_setall_u8(sh1);
     divisor.val[2] = npyv_setall_u8(sh2);
-#elif defined(NPY_HAVE_SVE)
-    divisor = svundef3_u8();
-    divisor = svset3_u8(divisor, 0, svdup_n_u8(m));
-    divisor = svset3_u8(divisor, 1, svdup_n_u8(sh1));
-    divisor = svset3_u8(divisor, 2, svdup_n_u8(sh2));
 #elif defined(NPY_HAVE_NEON)
     divisor.val[0] = npyv_setall_u8(m);
     divisor.val[1] = npyv_reinterpret_u8_s8(npyv_setall_s8(-sh1));
@@ -251,15 +246,10 @@ NPY_FINLINE npyv_s8x3 npyv_divisor_s8(npy_int8 d)
     }
     npyv_s8x3 divisor;
 
-#ifdef NPY_HAVE_VSX2
+#if defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
     divisor.val[0] = npyv_setall_s8(m);
     divisor.val[1] = npyv_setall_s8(sh);
     divisor.val[2] = npyv_setall_s8(d < 0 ? -1 : 0);
-#elif defined(NPY_HAVE_SVE)
-    divisor = svundef3_s8();
-    divisor = svset3_s8(divisor, 0, svdup_n_s8(m));
-    divisor = svset3_s8(divisor, 2, svdup_n_s8(d < 0 ? -1 : 0));
-    divisor = svset3_s8(divisor, 1, svdup_n_s8(sh));
 #elif defined(NPY_HAVE_NEON)
     divisor.val[0] = npyv_setall_s8(m);
     divisor.val[1] = npyv_setall_s8(-sh);
@@ -296,15 +286,10 @@ NPY_FINLINE npyv_u16x3 npyv_divisor_u16(npy_uint16 d)
     divisor.val[0] = npyv_setall_u16(m);
     divisor.val[1] = npyv_set_u16(sh1);
     divisor.val[2] = npyv_set_u16(sh2);
-#elif defined(NPY_HAVE_VSX2)
+#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
     divisor.val[0] = npyv_setall_u16(m);
     divisor.val[1] = npyv_setall_u16(sh1);
     divisor.val[2] = npyv_setall_u16(sh2);
-#elif defined(NPY_HAVE_SVE)
-    divisor = svundef3_u16();
-    divisor = svset3_u16(divisor, 0, svdup_n_u16(m));
-    divisor = svset3_u16(divisor, 1, svdup_n_u16(sh1));
-    divisor = svset3_u16(divisor, 2, svdup_n_u16(sh2));
 #elif defined(NPY_HAVE_NEON)
     divisor.val[0] = npyv_setall_u16(m);
     divisor.val[1] = npyv_reinterpret_u16_s16(npyv_setall_s16(-sh1));
@@ -335,15 +320,10 @@ NPY_FINLINE npyv_s16x3 npyv_divisor_s16(npy_int16 d)
     divisor.val[0] = npyv_setall_s16(m);
     divisor.val[1] = npyv_set_s16(sh);
     divisor.val[2] = npyv_setall_s16(d < 0 ? -1 : 0); // sign of divisor
-#elif defined(NPY_HAVE_VSX2)
+#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
     divisor.val[0] = npyv_setall_s16(m);
     divisor.val[1] = npyv_setall_s16(sh);
     divisor.val[2] = npyv_setall_s16(d < 0 ? -1 : 0); // sign of divisor
-#elif defined(NPY_HAVE_SVE)
-    divisor = svundef3_s16();
-    divisor = svset3(divisor, 0, npyv_setall_s16(m));
-    divisor = svset3(divisor, 1, npyv_setall_s16(sh));
-    divisor = svset3(divisor, 2, npyv_setall_s16(d < 0 ? -1 : 0));  // sign of divisor
 #elif defined(NPY_HAVE_NEON)
     divisor.val[0] = npyv_setall_s16(m);
     divisor.val[1] = npyv_setall_s16(-sh);
@@ -379,15 +359,10 @@ NPY_FINLINE npyv_u32x3 npyv_divisor_u32(npy_uint32 d)
     divisor.val[0] = npyv_setall_u32(m);
     divisor.val[1] = npyv_set_u32(sh1);
     divisor.val[2] = npyv_set_u32(sh2);
-#elif defined(NPY_HAVE_VSX2)
+#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
     divisor.val[0] = npyv_setall_u32(m);
     divisor.val[1] = npyv_setall_u32(sh1);
     divisor.val[2] = npyv_setall_u32(sh2);
-#elif defined(NPY_HAVE_SVE)
-    divisor = svundef3_u32();
-    divisor = svset3_u32(divisor, 0, npyv_setall_u32(m));
-    divisor = svset3_u32(divisor, 1, npyv_setall_u32(sh1));
-    divisor = svset3_u32(divisor, 2, npyv_setall_u32(sh2));
 #elif defined(NPY_HAVE_NEON)
     divisor.val[0] = npyv_setall_u32(m);
     divisor.val[1] = npyv_reinterpret_u32_s32(npyv_setall_s32(-sh1));
@@ -423,15 +398,10 @@ NPY_FINLINE npyv_s32x3 npyv_divisor_s32(npy_int32 d)
     divisor.val[0] = npyv_setall_s32(m);
     divisor.val[1] = npyv_set_s32(sh);
     divisor.val[2] = npyv_setall_s32(d < 0 ? -1 : 0); // sign of divisor
-#elif defined(NPY_HAVE_VSX2)
+#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
     divisor.val[0] = npyv_setall_s32(m);
     divisor.val[1] = npyv_setall_s32(sh);
     divisor.val[2] = npyv_setall_s32(d < 0 ? -1 : 0); // sign of divisor
-#elif defined(NPY_HAVE_SVE)
-    divisor = svundef3_s32();
-    divisor = svset3(divisor, 0, svdup_n_s32(m));
-    divisor = svset3(divisor, 2, svdup_n_s32(d < 0 ? -1 : 0));  // sign of divisor
-    divisor = svset3(divisor, 1, svdup_n_s32(sh));
 #elif defined(NPY_HAVE_NEON)
     divisor.val[0] = npyv_setall_s32(m);
     divisor.val[1] = npyv_setall_s32(-sh);
@@ -445,7 +415,7 @@ NPY_FINLINE npyv_s32x3 npyv_divisor_s32(npy_int32 d)
 NPY_FINLINE npyv_u64x3 npyv_divisor_u64(npy_uint64 d)
 {
     npyv_u64x3 divisor;
-#if defined(NPY_HAVE_SVE) || defined(NPY_HAVE_SSE2) // SSE/AVX2/AVX512
+#if defined(NPY_HAVE_SSE2) // SSE/AVX2/AVX512
     npy_uint64 l, l2, sh1, sh2, m;
     switch (d) {
     case 0: // LCOV_EXCL_LINE
@@ -468,13 +438,8 @@ NPY_FINLINE npyv_u64x3 npyv_divisor_u64(npy_uint64 d)
         divisor.val[0] = npyv_setall_u64(m);
         divisor.val[1] = npyv_set_u64(sh1);
         divisor.val[2] = npyv_set_u64(sh2);
-    #elif defined(NPY_HAVE_SVE)
-        divisor = svundef3_u64();
-        divisor = svset3_u64(divisor, 0, svdup_n_u64(m));
-        divisor = svset3_u64(divisor, 1, svdup_n_u64(sh1));
-        divisor = svset3_u64(divisor, 2, svdup_n_u64(sh2));
     #endif
-#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_NEON)
+#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE) || defined(NPY_HAVE_NEON)
     divisor.val[0] = npyv_setall_u64(d);
 #else
 #error "please initialize the shifting operand for the new architecture"
@@ -485,7 +450,7 @@ NPY_FINLINE npyv_u64x3 npyv_divisor_u64(npy_uint64 d)
 NPY_FINLINE npyv_s64x3 npyv_divisor_s64(npy_int64 d)
 {
     npyv_s64x3 divisor;
-#if defined(NPY_HAVE_SVE) || defined(NPY_HAVE_SSE2) // SSE/AVX2/AVX512
+#if defined(NPY_HAVE_SSE2) // SSE/AVX2/AVX512
     npy_int64 d1 = llabs(d);
     npy_int64 sh, m;
     // Handel abs overflow
@@ -508,13 +473,8 @@ NPY_FINLINE npyv_s64x3 npyv_divisor_s64(npy_int64 d)
         divisor.val[0] = npyv_setall_s64(m);
         divisor.val[1] = npyv_set_s64(sh);
         divisor.val[2] = npyv_setall_s64(d < 0 ? -1 : 0);  // sign of divisor
-    #elif defined(NPY_HAVE_SVE)	
-        divisor = svundef3_s64();
-        divisor = svset3_s64(divisor, 0, svdup_n_s64(m));
-        divisor = svset3_s64(divisor, 1, svdup_n_s64(sh));
-        divisor = svset3_s64(divisor, 2, svdup_n_s64(d < 0 ? -1 : 0));
     #endif
-#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_NEON)
+#elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE) || defined(NPY_HAVE_NEON)
     divisor.val[0] = npyv_setall_s64(d);
     divisor.val[1] = npyv_cvt_s64_b64(
         npyv_cmpeq_s64(npyv_setall_s64(-1), divisor.val[0])

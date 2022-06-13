@@ -2178,21 +2178,11 @@ count_zero_bytes_u8(const npy_uint8 **d, const npy_uint8 *end, npy_uint8 max_cou
 NPY_FINLINE NPY_GCC_OPT_3 npyv_u16x2
 count_zero_bytes_u16(const npy_uint8 **d, const npy_uint8 *end, npy_uint16 max_count)
 {
-#ifdef NPY_HAVE_SVE
-#define GET_LANE(B, S, L) svget2_u##B(S, L)
-#define SET_LANE(B, D, L, S) D = svset2_u##B(D, L, S)
-#else
 #define GET_LANE(B, S, L) S.val[L]
 #define SET_LANE(B, D, L, S) D.val[L] = S
-#endif
 
-#ifdef NPY_HAVE_SVE
-    const svuint16_t zero = svdup_n_u16(0);
-    npyv_u16x2 vsum16 = svcreate2(zero, zero);
-#else
     npyv_u16x2 vsum16;
     vsum16.val[0] = vsum16.val[1] = npyv_zero_u16();
-#endif
     npy_intp lane_max = 0;
     while (*d < end && lane_max <= max_count - NPY_MAX_UINT8) {
         npyv_u8 vsum8 = count_zero_bytes_u8(d, end, NPY_MAX_UINT8);
