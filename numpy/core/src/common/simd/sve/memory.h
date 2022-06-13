@@ -509,7 +509,7 @@ npyv_lut32_f32(const float *table, npyv_u32 idx)
             svcmpne_n_u32(mask_all, svand_n_u32_m(mask_all, idx, 1 << 4), 0);
     npyv_f32 t0 = svtbl_f32(table0, t_idx);
     npyv_f32 t1 = svtbl_f32(table1, t_idx);
-    return svsel_f32(mask, t0, t1);
+    return svsel_f32(mask, t1, t0);
 }
 NPY_FINLINE npyv_u32
 npyv_lut32_u32(const npy_uint32 *table, npyv_u32 idx)
