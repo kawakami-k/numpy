@@ -113,56 +113,79 @@ npyv_expand_u32_u16(npyv_u16 data)
 NPY_FINLINE npy_uint64
 npyv_tobits_b8(npyv_b8 A)
 {
-    const svbool_t mask_zero = svpfalse();
-
-    svbool_t l, h, l_l, l_h, h_l, h_h;
-    svbool_t l_l_l, l_l_h, l_h_l, l_h_h;
-    svbool_t h_l_l, h_l_h, h_h_l, h_h_h;
-    svuint64_t idx0, idx1, idx2, idx3, idx4, idx5, idx6, idx7;
+    const __pred mask_zero = svpfalse();
     const uint64_t len = svcntb();
-    uint64_t retVal = 0;
 
-    l = svzip1_b64(A, mask_zero);
-    h = svzip2_b64(A, mask_zero);
-    idx0 = svindex_u64(0, 1);
-    idx1 = svindex_u64(8, 1);
+    npyv_b8 l, h, l_l, l_h, h_l, h_h;
+    npyv_b8 l_l_l, l_l_h, l_h_l, l_h_h, h_l_l, h_l_h, h_h_l, h_h_h;
 
+    if (len >= 16) {
+        l = svzip1_b8(A, mask_zero);
+        h = svzip2_b8(A, mask_zero);
+    }
     if (len >= 32) {
-        l_l = svzip1_b64(l, mask_zero);
-        l_h = svzip2_b64(l, mask_zero);
-        h_l = svzip1_b64(h, mask_zero);
-        h_h = svzip2_b64(h, mask_zero);
-        idx2 = svindex_u64(16, 1);
-        idx3 = svindex_u64(24, 1);
+        l_l = svzip1_b8(l, mask_zero);
+        l_h = svzip2_b8(l, mask_zero);
+        h_l = svzip1_b8(h, mask_zero);
+        h_h = svzip2_b8(h, mask_zero);
     }
     if (len >= 64) {
-        l_l_l = svzip1_b64(l_l, mask_zero);
-        l_l_h = svzip2_b64(l_l, mask_zero);
-        l_h_l = svzip1_b64(l_h, mask_zero);
-        l_h_h = svzip2_b64(l_h, mask_zero);
-        h_l_l = svzip1_b64(h_l, mask_zero);
-        h_l_h = svzip2_b64(h_l, mask_zero);
-        h_h_l = svzip1_b64(h_h, mask_zero);
-        h_h_h = svzip2_b64(h_h, mask_zero);
-        idx4 = svindex_u64(32, 1);
-        idx5 = svindex_u64(40, 1);
-        idx6 = svindex_u64(48, 1);
-        idx7 = svindex_u64(56, 1);
+        l_l_l = svzip1_b8(l_l, mask_zero);
+        l_l_h = svzip2_b8(l_l, mask_zero);
+        l_h_l = svzip1_b8(l_h, mask_zero);
+        l_h_h = svzip2_b8(l_h, mask_zero);
+        h_l_l = svzip1_b8(h_l, mask_zero);
+        h_l_h = svzip2_b8(h_l, mask_zero);
+        h_h_l = svzip1_b8(h_h, mask_zero);
+        h_h_h = svzip2_b8(h_h, mask_zero);
     }
 
     switch (len) {
-        case 16:
-            retVal = svorv_u64(l, idx0);
-            retVal |= svorv_u64(h, idx1);
-            break;
-        case 32:
-            retVal = svorv_u64(l_l, idx0);
-            retVal = svorv_u64(l_h, idx1);
-            retVal = svorv_u64(h_l, idx2);
-            retVal = svorv_u64(h_h, idx3);
-            break;
-        case 64:
-            retVal |= svorv_u64(l_l_l, idx0);
+        case 16: {
+	  const npyv_u16 one = svdup_u16(1);
+            npyv_u16 idx0 = svindex_u16(0, 1);
+            npyv_u16 idx1 = svindex_u16(8, 1);
+	    idx0 = svlsl_u16_x(svptrue_b16(), one, idx0);
+	    idx1 = svlsl_u16_x(svptrue_b16(), one, idx1);
+            uint64_t retVal = svorv_u16(l, idx0);
+            retVal |= svorv_u16(h, idx1);
+            return retVal;
+        }
+        case 32: {
+	  const npyv_u32 one = svdup_u32(1);
+            npyv_u32 idx0 = svindex_u32(0, 1);
+            npyv_u32 idx1 = svindex_u32(8, 1);
+            npyv_u32 idx2 = svindex_u32(16, 1);
+            npyv_u32 idx3 = svindex_u32(24, 1);
+	    idx0 = svlsl_u32_x(svptrue_b32(), one, idx0);
+	    idx1 = svlsl_u32_x(svptrue_b32(), one, idx1);
+	    idx2 = svlsl_u32_x(svptrue_b32(), one, idx2);
+	    idx3 = svlsl_u32_x(svptrue_b32(), one, idx3);
+            uint64_t retVal = svorv_u32(l_l, idx0);
+            retVal |= svorv_u32(l_h, idx1);
+            retVal |= svorv_u32(h_l, idx2);
+            retVal |= svorv_u32(h_h, idx3);
+            return retVal;
+        }
+        case 64: {
+	  const npyv_u64 one = svdup_u64(1);
+            npyv_u64 idx0 = svindex_u64(0, 1);
+            npyv_u64 idx1 = svindex_u64(8, 1);
+            npyv_u64 idx2 = svindex_u64(16, 1);
+            npyv_u64 idx3 = svindex_u64(24, 1);
+            npyv_u64 idx4 = svindex_u64(32, 1);
+            npyv_u64 idx5 = svindex_u64(40, 1);
+            npyv_u64 idx6 = svindex_u64(48, 1);
+            npyv_u64 idx7 = svindex_u64(56, 1);
+	    idx0 = svlsl_u64_x(svptrue_b64(), one, idx0);
+	    idx1 = svlsl_u64_x(svptrue_b64(), one, idx1);
+	    idx2 = svlsl_u64_x(svptrue_b64(), one, idx2);
+	    idx3 = svlsl_u64_x(svptrue_b64(), one, idx3);
+	    idx4 = svlsl_u64_x(svptrue_b64(), one, idx4);
+	    idx5 = svlsl_u64_x(svptrue_b64(), one, idx5);
+	    idx6 = svlsl_u64_x(svptrue_b64(), one, idx6);
+	    idx7 = svlsl_u64_x(svptrue_b64(), one, idx7);
+            uint64_t retVal = svorv_u64(l_l_l, idx0);
             retVal |= svorv_u64(l_l_h, idx1);
             retVal |= svorv_u64(l_h_l, idx2);
             retVal |= svorv_u64(l_h_h, idx3);
@@ -170,12 +193,13 @@ npyv_tobits_b8(npyv_b8 A)
             retVal |= svorv_u64(h_l_h, idx5);
             retVal |= svorv_u64(h_h_l, idx6);
             retVal |= svorv_u64(h_h_h, idx7);
-            break;
+            return retVal;
+        }
         default:
             assert(!"unsupported SVE size!");
     }
 
-    return retVal;
+    return 0;
 }
 
 NPY_FINLINE npy_uint64
