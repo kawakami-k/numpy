@@ -1,6 +1,7 @@
 #ifndef _NPY_SIMD_H_
 #error "Not a standalone header"
 #endif
+
 #define NPY_SIMD 512
 #define NPY_SIMD_WIDTH 64
 #define NPY_SIMD_F64 1
@@ -8,6 +9,11 @@
 // Enough limit to allow us to use _mm512_i32gather_* and _mm512_i32scatter_*
 #define NPY_SIMD_MAXLOAD_STRIDE32 (0x7fffffff / 16)
 #define NPY_SIMD_MAXSTORE_STRIDE32 (0x7fffffff / 16)
+
+
+typedef svint32_t vec32 __attribute__((arm_sve_vector_bits(NPY_SIMD)));
+typedef svbool_t pred __attribute__((arm_sve_vector_bits(NPY_SIMD)));
+
 
 typedef svuint8_t npyv_u8;
 typedef svint8_t npyv_s8;

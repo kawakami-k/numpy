@@ -1,6 +1,3 @@
-#ifdef _MSC_VER
-#include <Intrin.h>
-#endif
 #include <arm_sve.h>
 
 int main(void)
