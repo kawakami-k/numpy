@@ -209,7 +209,6 @@ npyv_mul_f64(npyv_f64 a, npyv_f64 b)
 NPYV_IMPL_SVE_DIVC_U(8)
 NPYV_IMPL_SVE_DIVC_U(16)
 NPYV_IMPL_SVE_DIVC_U(32)
-NPYV_IMPL_SVE_DIVC_U(64)
 
 // divide each signed 16-bit element by divisor (round towards zero)
 // q               = ((a + mulhi) >> sh1) - XSIGN(a)
@@ -235,7 +234,39 @@ NPYV_IMPL_SVE_DIVC_U(64)
 NPYV_IMPL_SVE_DIVC_S(8)
 NPYV_IMPL_SVE_DIVC_S(16)
 NPYV_IMPL_SVE_DIVC_S(32)
-NPYV_IMPL_SVE_DIVC_S(64)
+
+// divide each unsigned 64-bit element by a divisor
+NPY_FINLINE npyv_u64 npyv_divc_u64(npyv_u64 a, const npyv_u64x3 divisor)
+{
+    // high part of unsigned multiplication
+  npyv_u64 mulhi      = svmulh_u64_x(svptrue_b64(), a, divisor.val[0]);
+    // floor(a/d)      = (mulhi + ((a-mulhi) >> sh1)) >> sh2
+  npyv_u64 q          = svsub_u64_x(svptrue_b64(), a, mulhi);
+    q          = svlsr_u64_x(svptrue_b64(), q, divisor.val[1]);
+    q          = svadd_u64_x(svptrue_b64(), mulhi, q);
+    q          = svlsr_x(svptrue_b64(), q, divisor.val[2]);
+    return  q;
+}
+// divide each unsigned 64-bit element by a divisor (round towards zero)
+NPY_FINLINE npyv_s64 npyv_divc_s64(npyv_s64 a, const npyv_s64x3 divisor)
+{
+    // high part of unsigned multiplication
+  npyv_s64 mulhi      = svreinterpret_s64_u64(svmulh_u64_x(svptrue_b64(), svreinterpret_u64_s64(a), svreinterpret_u64_s64(divisor.val[0])));
+    // convert unsigned to signed high multiplication
+    // mulhi - ((a < 0) ? m : 0) - ((m < 0) ? a : 0);
+  npyv_s64 asign      = svasr_n_s64_x(svptrue_b64(), a, 63);
+  npyv_s64 msign      = svasr_n_s64_x(svptrue_b64(), divisor.val[0], 63);
+  npyv_s64 m_asign    = svand_s64_x(svptrue_b64(), divisor.val[0], asign);
+  npyv_s64 a_msign    = svand_s64_x(svptrue_b64(), a, msign);
+  mulhi      = svsub_s64_x(svptrue_b64(), mulhi, m_asign);
+  mulhi      = svsub_s64_x(svptrue_b64(), mulhi, a_msign);
+    // q               = ((a + mulhi) >> sh1) - XSIGN(a)
+    // trunc(a/d)      = (q ^ dsign) - dsign
+  npyv_s64 q = svasr_s64_x(svptrue_b64(), svadd_s64_x(svptrue_b64(), a, mulhi), svreinterpret_u64_s64(divisor.val[1]));
+            q          = svsub_s64_x(svptrue_b64(), q, asign);
+            q          = svsub_s64_x(svptrue_b64(), sveor_s64_x(svptrue_b64(), q, divisor.val[2]), divisor.val[2]);
+    return  q;
+}
 
 /***************************
  * Division

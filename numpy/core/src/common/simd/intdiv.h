@@ -136,7 +136,7 @@ NPY_FINLINE npy_uint64 npyv__divh128_u64(npy_uint64 high, npy_uint64 divisor)
 {
     assert(divisor > 1);
     npy_uint64 quotient;
-#if defined(_M_X64) && defined(_MSC_VER) && _MSC_VER >= 1920
+#if defined(_M_X64) && defined(_MSC_VER) && _MSC_VER >= 1920 && !defined(__clang__)
     npy_uint64 remainder;
     quotient = _udiv128(high, 0, divisor, &remainder);
     (void)remainder;
@@ -248,15 +248,18 @@ NPY_FINLINE npyv_s8x3 npyv_divisor_s8(npy_int8 d)
         sh = m = 1 / ((npy_int8 volatile *)&d)[0]; // LCOV_EXCL_LINE
     }
     npyv_s8x3 divisor;
+
+#if defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
     divisor.val[0] = npyv_setall_s8(m);
+    divisor.val[1] = npyv_setall_s8(sh);
     divisor.val[2] = npyv_setall_s8(d < 0 ? -1 : 0);
-    #ifdef NPY_HAVE_VSX2 || defined(NPY_HAVE_SVE)
-        divisor.val[1] = npyv_setall_s8(sh);
-    #elif defined(NPY_HAVE_NEON)
-        divisor.val[1] = npyv_setall_s8(-sh);
-    #else
-        #error "please initialize the shifting operand for the new architecture"
-    #endif
+#elif defined(NPY_HAVE_NEON)
+    divisor.val[0] = npyv_setall_s8(m);
+    divisor.val[1] = npyv_setall_s8(-sh);
+    divisor.val[2] = npyv_setall_s8(d < 0 ? -1 : 0);
+#else
+#error "please initialize the shifting operand for the new architecture"
+#endif
     return divisor;
 #endif
 }
@@ -282,18 +285,20 @@ NPY_FINLINE npyv_u16x3 npyv_divisor_u16(npy_uint16 d)
         sh1 = 1;  sh2 = l - 1;                    // shift counts
     }
     npyv_u16x3 divisor;
-    divisor.val[0] = npyv_setall_u16(m);
 #ifdef NPY_HAVE_SSE2 // SSE/AVX2/AVX512
+    divisor.val[0] = npyv_setall_u16(m);
     divisor.val[1] = npyv_set_u16(sh1);
     divisor.val[2] = npyv_set_u16(sh2);
 #elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
+    divisor.val[0] = npyv_setall_u16(m);
     divisor.val[1] = npyv_setall_u16(sh1);
     divisor.val[2] = npyv_setall_u16(sh2);
 #elif defined(NPY_HAVE_NEON)
+    divisor.val[0] = npyv_setall_u16(m);
     divisor.val[1] = npyv_reinterpret_u16_s16(npyv_setall_s16(-sh1));
     divisor.val[2] = npyv_reinterpret_u16_s16(npyv_setall_s16(-sh2));
 #else
-    #error "please initialize the shifting operand for the new architecture"
+#error "please initialize the shifting operand for the new architecture"
 #endif
     return divisor;
 }
@@ -314,14 +319,18 @@ NPY_FINLINE npyv_s16x3 npyv_divisor_s16(npy_int16 d)
         sh = m = 1 / ((npy_int16 volatile *)&d)[0]; // LCOV_EXCL_LINE
     }
     npyv_s16x3 divisor;
-    divisor.val[0] = npyv_setall_s16(m);
-    divisor.val[2] = npyv_setall_s16(d < 0 ? -1 : 0); // sign of divisor
 #ifdef NPY_HAVE_SSE2 // SSE/AVX2/AVX512
+    divisor.val[0] = npyv_setall_s16(m);
     divisor.val[1] = npyv_set_s16(sh);
+    divisor.val[2] = npyv_setall_s16(d < 0 ? -1 : 0); // sign of divisor
 #elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
+    divisor.val[0] = npyv_setall_s16(m);
     divisor.val[1] = npyv_setall_s16(sh);
+    divisor.val[2] = npyv_setall_s16(d < 0 ? -1 : 0); // sign of divisor
 #elif defined(NPY_HAVE_NEON)
+    divisor.val[0] = npyv_setall_s16(m);
     divisor.val[1] = npyv_setall_s16(-sh);
+    divisor.val[2] = npyv_setall_s16(d < 0 ? -1 : 0); // sign of divisor
 #else
     #error "please initialize the shifting operand for the new architecture"
 #endif
@@ -349,18 +358,20 @@ NPY_FINLINE npyv_u32x3 npyv_divisor_u32(npy_uint32 d)
         sh1 = 1;  sh2 = l - 1;                        // shift counts
     }
     npyv_u32x3 divisor;
-    divisor.val[0] = npyv_setall_u32(m);
 #ifdef NPY_HAVE_SSE2 // SSE/AVX2/AVX512
+    divisor.val[0] = npyv_setall_u32(m);
     divisor.val[1] = npyv_set_u32(sh1);
     divisor.val[2] = npyv_set_u32(sh2);
 #elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
+    divisor.val[0] = npyv_setall_u32(m);
     divisor.val[1] = npyv_setall_u32(sh1);
     divisor.val[2] = npyv_setall_u32(sh2);
 #elif defined(NPY_HAVE_NEON)
+    divisor.val[0] = npyv_setall_u32(m);
     divisor.val[1] = npyv_reinterpret_u32_s32(npyv_setall_s32(-sh1));
     divisor.val[2] = npyv_reinterpret_u32_s32(npyv_setall_s32(-sh2));
 #else
-    #error "please initialize the shifting operand for the new architecture"
+#error "please initialize the shifting operand for the new architecture"
 #endif
     return divisor;
 }
@@ -386,14 +397,18 @@ NPY_FINLINE npyv_s32x3 npyv_divisor_s32(npy_int32 d)
         sh = m = 1 / ((npy_int32 volatile *)&d)[0]; // LCOV_EXCL_LINE
     }
     npyv_s32x3 divisor;
-    divisor.val[0] = npyv_setall_s32(m);
-    divisor.val[2] = npyv_setall_s32(d < 0 ? -1 : 0); // sign of divisor
 #ifdef NPY_HAVE_SSE2 // SSE/AVX2/AVX512
+    divisor.val[0] = npyv_setall_s32(m);
     divisor.val[1] = npyv_set_s32(sh);
+    divisor.val[2] = npyv_setall_s32(d < 0 ? -1 : 0); // sign of divisor
 #elif defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE)
+    divisor.val[0] = npyv_setall_s32(m);
     divisor.val[1] = npyv_setall_s32(sh);
+    divisor.val[2] = npyv_setall_s32(d < 0 ? -1 : 0); // sign of divisor
 #elif defined(NPY_HAVE_NEON)
+    divisor.val[0] = npyv_setall_s32(m);
     divisor.val[1] = npyv_setall_s32(-sh);
+    divisor.val[2] = npyv_setall_s32(d < 0 ? -1 : 0); // sign of divisor
 #else
     #error "please initialize the shifting operand for the new architecture"
 #endif
@@ -403,9 +418,9 @@ NPY_FINLINE npyv_s32x3 npyv_divisor_s32(npy_int32 d)
 NPY_FINLINE npyv_u64x3 npyv_divisor_u64(npy_uint64 d)
 {
     npyv_u64x3 divisor;
-#if defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE) || defined(NPY_HAVE_NEON)
+#if defined(NPY_HAVE_VSX2) || (defined(NPY_HAVE_NEON) && !defined(NPY_HAVE_SVE))
     divisor.val[0] = npyv_setall_u64(d);
-#else
+#elif defined(NPY_HAVE_SVE) || defined(NPY_HAVE_SSE2) // SSE/AVX2/AVX512
     npy_uint64 l, l2, sh1, sh2, m;
     switch (d) {
     case 0: // LCOV_EXCL_LINE
@@ -428,9 +443,12 @@ NPY_FINLINE npyv_u64x3 npyv_divisor_u64(npy_uint64 d)
     #ifdef NPY_HAVE_SSE2 // SSE/AVX2/AVX512
         divisor.val[1] = npyv_set_u64(sh1);
         divisor.val[2] = npyv_set_u64(sh2);
-    #else
-        #error "please initialize the shifting operand for the new architecture"
+    #elif defined(NPY_HAVE_SVE)
+        divisor.val[1] = npyv_setall_u64(sh1);
+        divisor.val[2] = npyv_setall_u64(sh2);
     #endif
+#else
+#error "please initialize the shifting operand for the new architecture"
 #endif
     return divisor;
 }
@@ -438,7 +456,7 @@ NPY_FINLINE npyv_u64x3 npyv_divisor_u64(npy_uint64 d)
 NPY_FINLINE npyv_s64x3 npyv_divisor_s64(npy_int64 d)
 {
     npyv_s64x3 divisor;
-#if defined(NPY_HAVE_VSX2) || defined(NPY_HAVE_SVE) || defined(NPY_HAVE_NEON)
+#if defined(NPY_HAVE_VSX2) || (defined(NPY_HAVE_NEON) && !defined(NPY_HAVE_SVE))
     divisor.val[0] = npyv_setall_s64(d);
     divisor.val[1] = npyv_cvt_s64_b64(
         npyv_cmpeq_s64(npyv_setall_s64(-1), divisor.val[0])
@@ -466,6 +484,8 @@ NPY_FINLINE npyv_s64x3 npyv_divisor_s64(npy_int64 d)
     divisor.val[2] = npyv_setall_s64(d < 0 ? -1 : 0);  // sign of divisor
     #ifdef NPY_HAVE_SSE2 // SSE/AVX2/AVX512
     divisor.val[1] = npyv_set_s64(sh);
+    #elif defined(NPY_HAVE_SVE)
+    divisor.val[1] = npyv_setall_s64(sh);
     #else
         #error "please initialize the shifting operand for the new architecture"
     #endif
