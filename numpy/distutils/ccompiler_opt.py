@@ -537,7 +537,7 @@ class _Config:
                 flags="-march=armv8.2-a+fp16fml"
             ),
             SVE = dict(
-                flags="-march=armv8.2-a+sve -mtune=a64fx"
+                flags="-march=armv8.2-a+sve -mtune=a64fx -msve-vector-bits=512"
             ),
         )
         if self.cc_on_armhf and is_unix: return dict(
