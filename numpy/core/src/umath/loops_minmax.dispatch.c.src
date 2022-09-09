@@ -1,6 +1,6 @@
 /*@targets
  ** $maxopt baseline
- ** neon asimd
+ ** neon asimd sve
  ** sse2 avx2 avx512_skx
  ** vsx2
  ** vx vxe
@@ -101,9 +101,19 @@ NPY_FINLINE @type@ scalar_@op@_@c_sfx@(@type@ a, @type@ b) {
 #if NPY_SIMD
 /**begin repeat
  * #sfx = s8, u8, s16, u16, s32, u32, s64, u64#
+ * #bits = 8, 8, 16, 16, 32, 32, 64, 64#
  * #is_64 = 0*6, 1*2#
  */
-#if defined(NPY_HAVE_ASIMD) && defined(__aarch64__)
+#if defined(NPY_HAVE_SVE) && defined(__aarch64__)
+    NPY_FINLINE npyv_lanetype_@sfx@ npyv_reduce_min_@sfx@(npyv_@sfx@ v)
+    {
+        return svminv_@sfx@(svptrue_b@bits@(), v);
+    }
+    NPY_FINLINE npyv_lanetype_@sfx@ npyv_reduce_max_@sfx@(npyv_@sfx@ v)
+    {
+        return svmaxv_@sfx@(svptrue_b@bits@(), v);
+    }
+#elif defined(NPY_HAVE_ASIMD) && defined(__aarch64__)
     #if !@is_64@
         #define npyv_reduce_min_@sfx@ vminvq_@sfx@
         #define npyv_reduce_max_@sfx@ vmaxvq_@sfx@
@@ -145,11 +155,19 @@ NPY_FINLINE @type@ scalar_@op@_@c_sfx@(@type@ a, @type@ b) {
 /**begin repeat
  * #sfx = f32, f64#
  * #bsfx = b32, b64#
+ * #size = 32, 64#
  * #simd_chk = NPY_SIMD_F32, NPY_SIMD_F64#
  * #scalar_sfx = f, d#
  */
 #if @simd_chk@
-#if defined(NPY_HAVE_ASIMD) && defined(__aarch64__)
+#if defined(NPY_HAVE_SVE) && defined(__aarch64__)
+    #define npyv_minn_@sfx@(A, B) svmin_@sfx@_x(svptrue_b@size@(), A, B)
+    #define npyv_maxn_@sfx@(A, B) svmax_@sfx@_x(svptrue_b@size@(), A, B)
+    #define npyv_reduce_minn_@sfx@(A) svminv_@sfx@(svptrue_b@size@(), A)
+    #define npyv_reduce_maxn_@sfx@(A) svmaxv_@sfx@(svptrue_b@size@(), A)
+    #define npyv_reduce_minp_@sfx@(A) svminnmv_@sfx@(svptrue_b@size@(), A)
+    #define npyv_reduce_maxp_@sfx@(A) svmaxnmv_@sfx@(svptrue_b@size@(), A)
+#elif defined(NPY_HAVE_ASIMD) && defined(__aarch64__)
     #define npyv_minn_@sfx@ vminq_@sfx@
     #define npyv_maxn_@sfx@ vmaxq_@sfx@
     #define npyv_reduce_minn_@sfx@ vminvq_@sfx@
