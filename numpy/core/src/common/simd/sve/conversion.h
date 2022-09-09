@@ -81,10 +81,8 @@ NPY_FINLINE npyv_u16x2
 npyv_expand_u16_u8(npyv_u8 data)
 {
     npyv_u16x2 r;
-    svuint8_t lo = svzip1_u8(data, data);
-    svuint8_t hi = svzip2_u8(data, data);
-    r.val[0] = svextb_u16_x(svptrue_b16(), svreinterpret_u16_u8(lo));
-    r.val[1] = svextb_u16_x(svptrue_b16(), svreinterpret_u16_u8(hi));
+    r.val[0] = svunpklo_u16(data);
+    r.val[1] = svunpkhi_u16(data);
     return r;
 }
 
@@ -92,10 +90,8 @@ NPY_FINLINE npyv_u32x2
 npyv_expand_u32_u16(npyv_u16 data)
 {
     npyv_u32x2 r;
-    svuint16_t lo = svzip1_u16(data, data);
-    svuint16_t hi = svzip2_u16(data, data);
-    r.val[0] = svexth_u32_x(svptrue_b32(), svreinterpret_u32_u16(lo));
-    r.val[1] = svexth_u32_x(svptrue_b32(), svreinterpret_u32_u16(hi));
+    r.val[0] = svunpklo_u32(data);
+    r.val[1] = svunpkhi_u32(data);
     return r;
 }
 
