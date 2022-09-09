@@ -2,12 +2,6 @@
 #error "Not a standalone header"
 #endif
 
-#define NPY_SIMD_F64 1
-#define NPY_SIMD_FMA3 1
-
-#define NPY_SIMD_MAXLOAD_STRIDE32 (0x7fffffff / 16)
-#define NPY_SIMD_MAXSTORE_STRIDE32 (0x7fffffff / 16)
-
 #if __ARM_FEATURE_SVE_BITS == 512
 #define NPY_SIMD 512
 #define __SVE_ATTRIBUTE_SIZE_ __attribute__((arm_sve_vector_bits(NPY_SIMD)))
@@ -19,6 +13,15 @@
 #endif
 
 #define NPY_SIMD_WIDTH (NPY_SIMD / 8)
+
+#define NPY_SIMD_F64 1
+#define NPY_SIMD_F32 1
+#define NPY_SIMD_FMA3 1
+#define NPY_SIMD_BIGENDIAN 0
+
+#define NPY_SIMD_MAXLOAD_STRIDE32 (0x7fffffff / 16)
+#define NPY_SIMD_MAXSTORE_STRIDE32 (0x7fffffff / 16)
+
 
 typedef svbool_t __pred __SVE_ATTRIBUTE_SIZE_;
 

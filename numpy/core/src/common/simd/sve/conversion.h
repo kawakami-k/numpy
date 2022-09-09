@@ -95,6 +95,52 @@ npyv_expand_u32_u16(npyv_u16 data)
     return r;
 }
 
+// pack two 16-bit boolean into one 8-bit boolean vector
+NPY_FINLINE npyv_b8 npyv_pack_b8_b16(npyv_b16 a, npyv_b16 b) {
+    a = svuzp1_b8(a, a);
+    b = svuzp1_b8(b, b);
+    svuint8_t z0 = svdup_n_u8_z(a, 1);
+    svuint8_t z1 = svdup_n_u8_z(b, 1);
+    z0 = svext_u8(z0, z0, npyv_nlanes_u8/2);
+    z0 = svext_u8(z0, z1, npyv_nlanes_u8/2);
+    return svcmpeq_n_u8(svptrue_b8(), z0, 1);
+}
+
+// pack four 32-bit boolean vectors into one 8-bit boolean vector
+NPY_FINLINE npyv_b8
+npyv_pack_b8_b32(npyv_b32 a, npyv_b32 b, npyv_b32 c, npyv_b32 d) {
+  npyv_u8 buf;
+  uint8_t *ptr = (uint8_t *)(&buf);
+
+  svst1b_vnum_u32(svptrue_b32(), ptr, 0, svdup_n_u32_z(a, 1));
+  svst1b_vnum_u32(svptrue_b32(), ptr, 1, svdup_n_u32_z(b, 1));
+  svst1b_vnum_u32(svptrue_b32(), ptr, 2, svdup_n_u32_z(c, 1));
+  svst1b_vnum_u32(svptrue_b32(), ptr, 3, svdup_n_u32_z(d, 1));
+
+  svuint8_t z0 = svld1_u8(svptrue_b8(), ptr);
+  return svcmpeq_n_u8(svptrue_b8(), z0, 1);
+}
+
+// pack eight 64-bit boolean vectors into one 8-bit boolean vector
+NPY_FINLINE npyv_b8
+npyv_pack_b8_b64(npyv_b64 a, npyv_b64 b, npyv_b64 c, npyv_b64 d,
+                 npyv_b64 e, npyv_b64 f, npyv_b64 g, npyv_b64 h) {
+  npyv_u8 buf;
+  uint8_t *ptr = (uint8_t *)(&buf);
+
+  svst1b_vnum_u64(svptrue_b64(), ptr, 0, svdup_n_u64_z(a, 1));
+  svst1b_vnum_u64(svptrue_b64(), ptr, 1, svdup_n_u64_z(b, 1));
+  svst1b_vnum_u64(svptrue_b64(), ptr, 2, svdup_n_u64_z(c, 1));
+  svst1b_vnum_u64(svptrue_b64(), ptr, 3, svdup_n_u64_z(d, 1));
+  svst1b_vnum_u64(svptrue_b64(), ptr, 4, svdup_n_u64_z(e, 1));
+  svst1b_vnum_u64(svptrue_b64(), ptr, 5, svdup_n_u64_z(f, 1));
+  svst1b_vnum_u64(svptrue_b64(), ptr, 6, svdup_n_u64_z(g, 1));
+  svst1b_vnum_u64(svptrue_b64(), ptr, 7, svdup_n_u64_z(h, 1));
+
+  svuint8_t z0 = svld1_u8(svptrue_b8(), ptr);
+  return svcmpeq_n_u8(svptrue_b8(), z0, 1);
+}
+
 #define NPYV_IMPL_SVE_TOBIT(BITS)                                      \
     NPY_FINLINE npy_uint64 npyv_tobits_b##BITS(npyv_b##BITS a)         \
     {                                                                  \

@@ -106,6 +106,11 @@ NPYV_IMPL_SVE_SHIFT_R_IMM(64)
     {                                                                     \
         return svreinterpret_##SFX0##_##SFX2(svnot_##SFX2##_x(            \
                 svptrue_##SFX1(), svreinterpret_##SFX2##_##SFX0(a)));     \
+    }                                                                     \
+    NPY_FINLINE npyv_##SFX0 npyv_andc_##SFX0(npyv_##SFX0 a, npyv_##SFX0 b)\
+    {                                                                     \
+        return svreinterpret_##SFX0##_##SFX2(svbic_##SFX2##_x(            \
+							      svptrue_##SFX1(), svreinterpret_##SFX2##_##SFX0(b), svreinterpret_##SFX2##_##SFX0(a))); \
     }
 NPYV_IMPL_SVE_LOGICAL(u8, b8, u8)
 NPYV_IMPL_SVE_LOGICAL(u16, b16, u16)
@@ -137,6 +142,18 @@ NPYV_IMPL_SVE_LOGICAL(f64, b64, u64)
     NPY_FINLINE npyv_##SFX npyv_not_##SFX(npyv_##SFX a)               \
     {                                                                 \
         return svnot_b_z(svptrue_b8(), a);                            \
+    }                                                                 \
+    NPY_FINLINE npyv_##SFX npyv_andc_##SFX(npyv_##SFX a, npyv_##SFX b)\
+    {                                                                 \
+      return svbic_b_z(svptrue_b8(), b, a);                           \
+    }                                                                 \
+    NPY_FINLINE npyv_##SFX npyv_orc_##SFX(npyv_##SFX a, npyv_##SFX b)\
+    {                                                                 \
+      return npyv_or_##SFX(npyv_not_##SFX(b), a);		      \
+    }                                                                 \
+    NPY_FINLINE npyv_##SFX npyv_xnor_##SFX(npyv_##SFX a, npyv_##SFX b)\
+    {                                                                 \
+      return npyv_not_##SFX(npyv_xor_##SFX(a, b));		      \
     }
 NPYV_IMPL_SVE_LOGICAL_MASK(b8)
 NPYV_IMPL_SVE_LOGICAL_MASK(b16)
