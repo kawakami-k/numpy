@@ -15,43 +15,52 @@
 #define NPYV_IMPL_SVE_MEM(SFX, SFX1, SFX2, CTYPE, VL_PAT, HALF_LANE)        \
     NPY_FINLINE npyv_##SFX npyv_load_##SFX(const npyv_lanetype_##SFX *ptr)  \
     {                                                                       \
+      printf("%s\n", __func__); \
         return svld1_##SFX(svptrue_##SFX1(), (const CTYPE *)ptr);           \
     }                                                                       \
     NPY_FINLINE npyv_##SFX npyv_loada_##SFX(const npyv_lanetype_##SFX *ptr) \
     {                                                                       \
+      printf("%s\n", __func__); \
         return svld1_##SFX(svptrue_##SFX1(), (const CTYPE *)ptr);           \
     }                                                                       \
     NPY_FINLINE npyv_##SFX npyv_loads_##SFX(const npyv_lanetype_##SFX *ptr) \
     {                                                                       \
+      printf("%s\n", __func__); \
         return svld1_##SFX(svptrue_##SFX1(), (const CTYPE *)ptr);           \
     }                                                                       \
     NPY_FINLINE npyv_##SFX npyv_loadl_##SFX(const npyv_lanetype_##SFX *ptr) \
     {                                                                       \
+      printf("%s\n", __func__); \
         return svld1_##SFX(svptrue_pat_##SFX1(VL_PAT), (const CTYPE *)ptr); \
     }                                                                       \
     NPY_FINLINE void npyv_store_##SFX(npyv_lanetype_##SFX *ptr,             \
                                       npyv_##SFX vec)                       \
     {                                                                       \
+      printf("%s\n", __func__); \
         svst1_##SFX(svptrue_##SFX1(), (CTYPE *)ptr, vec);                   \
     }                                                                       \
     NPY_FINLINE void npyv_storea_##SFX(npyv_lanetype_##SFX *ptr,            \
                                        npyv_##SFX vec)                      \
     {                                                                       \
+      printf("%s\n", __func__); \
         svst1_##SFX(svptrue_##SFX1(), (CTYPE *)ptr, vec);                   \
     }                                                                       \
     NPY_FINLINE void npyv_stores_##SFX(npyv_lanetype_##SFX *ptr,            \
                                        npyv_##SFX vec)                      \
     {                                                                       \
+      printf("%s\n", __func__); \
         svst1_##SFX(svptrue_##SFX1(), (CTYPE *)ptr, vec);                   \
     }                                                                       \
     NPY_FINLINE void npyv_storel_##SFX(npyv_lanetype_##SFX *ptr,            \
                                        npyv_##SFX vec)                      \
     {                                                                       \
+      printf("%s\n", __func__); \
         svst1_##SFX(svptrue_pat_##SFX1(VL_PAT), (CTYPE *)ptr, vec);         \
     }                                                                       \
     NPY_FINLINE void npyv_storeh_##SFX(npyv_lanetype_##SFX *ptr,            \
                                        npyv_##SFX vec)                      \
     {                                                                       \
+      printf("%s\n", __func__); \
         svbool_t mask = svptrue_pat_##SFX1(VL_PAT);                         \
         sv##CTYPE tmp = svext_##SFX(vec, vec, HALF_LANE);                   \
         svst1_##SFX(mask, (CTYPE *)ptr, tmp);                               \
@@ -76,6 +85,7 @@ NPY_FINLINE npyv_u32
 npyv_loadn_u32(const npy_uint32 *ptr, npy_intp stride)
 {
 #if 1
+      printf("%s\n", __func__);
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b32();
     const svint32_t steps = svindex_s32(0, 1);
@@ -106,6 +116,7 @@ npyv_loadn_u32(const npy_uint32 *ptr, npy_intp stride)
 NPY_FINLINE npyv_s32
 npyv_loadn_s32(const npy_int32 *ptr, npy_intp stride)
 {
+      printf("%s\n", __func__);
     return svreinterpret_s32_u32(
             npyv_loadn_u32((const npy_uint32 *)ptr, stride));
 }
@@ -113,6 +124,7 @@ npyv_loadn_s32(const npy_int32 *ptr, npy_intp stride)
 NPY_FINLINE npyv_f32
 npyv_loadn_f32(const float *ptr, npy_intp stride)
 {
+      printf("%s\n", __func__);
     return svreinterpret_f32_u32(
             npyv_loadn_u32((const npy_uint32 *)ptr, stride));
 }
@@ -121,6 +133,7 @@ npyv_loadn_f32(const float *ptr, npy_intp stride)
 NPY_FINLINE npyv_u64
 npyv_loadn_u64(const npy_uint64 *ptr, npy_intp stride)
 {
+      printf("%s\n", __func__);
 #if 1
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b64();
@@ -144,12 +157,14 @@ npyv_loadn_u64(const npy_uint64 *ptr, npy_intp stride)
 NPY_FINLINE npyv_s64
 npyv_loadn_s64(const npy_int64 *ptr, npy_intp stride)
 {
+      printf("%s\n", __func__);
     return svreinterpret_s64_u64(
             npyv_loadn_u64((const npy_uint64 *)ptr, stride));
 }
 NPY_FINLINE npyv_f64
 npyv_loadn_f64(const double *ptr, npy_intp stride)
 {
+      printf("%s\n", __func__); 
     return svreinterpret_f64_u64(
             npyv_loadn_u64((const npy_uint64 *)ptr, stride));
 }
@@ -160,6 +175,7 @@ npyv_loadn_f64(const double *ptr, npy_intp stride)
 NPY_FINLINE void
 npyv_storen_u32(npy_uint32 *ptr, npy_intp stride, npyv_u32 a)
 {
+      printf("%s\n", __func__);
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b32();
     const svint32_t steps = svindex_s32(0, 1);
@@ -170,17 +186,20 @@ npyv_storen_u32(npy_uint32 *ptr, npy_intp stride, npyv_u32 a)
 NPY_FINLINE void
 npyv_storen_s32(npy_int32 *ptr, npy_intp stride, npyv_s32 a)
 {
+      printf("%s\n", __func__);
     npyv_storen_u32((npy_uint32 *)ptr, stride, svreinterpret_u32_s32(a));
 }
 NPY_FINLINE void
 npyv_storen_f32(float *ptr, npy_intp stride, npyv_f32 a)
 {
+      printf("%s\n", __func__);
     npyv_storen_u32((npy_uint32 *)ptr, stride, svreinterpret_u32_f32(a));
 }
 //// 64
 NPY_FINLINE void
 npyv_storen_u64(npy_uint64 *ptr, npy_intp stride, npyv_u64 a)
 {
+      printf("%s\n", __func__);
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b64();
     const svint64_t steps = svindex_s64(0, 1);
@@ -191,11 +210,13 @@ npyv_storen_u64(npy_uint64 *ptr, npy_intp stride, npyv_u64 a)
 NPY_FINLINE void
 npyv_storen_s64(npy_int64 *ptr, npy_intp stride, npyv_s64 a)
 {
+      printf("%s\n", __func__);
     npyv_storen_u64((npy_uint64 *)ptr, stride, svreinterpret_u64_s64(a));
 }
 NPY_FINLINE void
 npyv_storen_f64(double *ptr, npy_intp stride, npyv_f64 a)
 {
+      printf("%s\n", __func__);
     npyv_storen_u64((npy_uint64 *)ptr, stride, svreinterpret_u64_f64(a));
 }
 
@@ -206,6 +227,7 @@ npyv_storen_f64(double *ptr, npy_intp stride, npyv_f64 a)
 NPY_FINLINE npyv_s32
 npyv_load_till_s32(const npy_int32 *ptr, npy_uintp nlane, npy_int32 fill)
 {
+      printf("%s\n", __func__);
     assert(nlane > 0);
     const svbool_t mask_all = svptrue_b32();
     if (nlane == NPY_SIMD_WIDTH / sizeof(int32_t)) {
@@ -222,6 +244,7 @@ npyv_load_till_s32(const npy_int32 *ptr, npy_uintp nlane, npy_int32 fill)
 NPY_FINLINE npyv_s32
 npyv_load_tillz_s32(const npy_int32 *ptr, npy_uintp nlane)
 {
+      printf("%s\n", __func__);
     assert(nlane > 0);
     const svbool_t mask_all = svptrue_b32();
     if (nlane == NPY_SIMD_WIDTH / sizeof(int32_t)) {
@@ -237,6 +260,7 @@ npyv_load_tillz_s32(const npy_int32 *ptr, npy_uintp nlane)
 NPY_FINLINE npyv_s64
 npyv_load_till_s64(const npy_int64 *ptr, npy_uintp nlane, npy_int64 fill)
 {
+      printf("%s\n", __func__);
     assert(nlane > 0);
     const svbool_t mask_all = svptrue_b64();
     if (nlane == NPY_SIMD_WIDTH / sizeof(int64_t)) {
@@ -253,6 +277,7 @@ npyv_load_till_s64(const npy_int64 *ptr, npy_uintp nlane, npy_int64 fill)
 NPY_FINLINE npyv_s64
 npyv_load_tillz_s64(const npy_int64 *ptr, npy_uintp nlane)
 {
+      printf("%s\n", __func__); 
     assert(nlane > 0);
     const svbool_t mask_all = svptrue_b64();
     if (nlane == NPY_SIMD_WIDTH / sizeof(int64_t)) {
@@ -306,6 +331,7 @@ NPY_FINLINE npyv_s32
 npyv_loadn_till_s32(const npy_int32 *ptr, npy_intp stride, npy_uintp nlane,
                     npy_int32 fill)
 {
+  printf("%s nlane=%d, fill=%d\n", __func__, nlane, fill);
     assert(nlane > 0);
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b32();
@@ -327,6 +353,7 @@ npyv_loadn_till_s32(const npy_int32 *ptr, npy_intp stride, npy_uintp nlane,
 NPY_FINLINE npyv_s32
 npyv_loadn_tillz_s32(const npy_int32 *ptr, npy_intp stride, npy_uintp nlane)
 {
+      printf("%s\n", __func__);
     return npyv_loadn_till_s32(ptr, stride, nlane, 0);
 }
 //// 64
@@ -334,6 +361,7 @@ NPY_FINLINE npyv_s64
 npyv_loadn_till_s64(const npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
                     npy_int64 fill)
 {
+      printf("%s\n", __func__);
     assert(nlane > 0);
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b64();
@@ -355,6 +383,7 @@ npyv_loadn_till_s64(const npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
 NPY_FINLINE npyv_s64
 npyv_loadn_tillz_s64(const npy_int64 *ptr, npy_intp stride, npy_uintp nlane)
 {
+      printf("%s\n", __func__);
     return npyv_loadn_till_s64(ptr, stride, nlane, 0);
 }
 /*********************************
@@ -364,6 +393,7 @@ npyv_loadn_tillz_s64(const npy_int64 *ptr, npy_intp stride, npy_uintp nlane)
 NPY_FINLINE void
 npyv_store_till_s32(npy_int32 *ptr, npy_uintp nlane, npyv_s32 a)
 {
+      printf("%s\n", __func__);
     assert(nlane > 0);
     const svbool_t mask_all = svptrue_b32();
     if (nlane == NPY_SIMD_WIDTH / sizeof(int32_t)) {
@@ -379,6 +409,7 @@ npyv_store_till_s32(npy_int32 *ptr, npy_uintp nlane, npyv_s32 a)
 NPY_FINLINE void
 npyv_store_till_s64(npy_int64 *ptr, npy_uintp nlane, npyv_s64 a)
 {
+      printf("%s\n", __func__);
     assert(nlane > 0);
     const svbool_t mask_all = svptrue_b64();
     if (nlane == NPY_SIMD_WIDTH / sizeof(int64_t)) {
@@ -398,6 +429,7 @@ NPY_FINLINE void
 npyv_storen_till_s32(npy_int32 *ptr, npy_intp stride, npy_uintp nlane,
                      npyv_s32 a)
 {
+      printf("%s\n", __func__);
     assert(nlane > 0);
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b32();
@@ -418,6 +450,7 @@ NPY_FINLINE void
 npyv_storen_till_s64(npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
                      npyv_s64 a)
 {
+      printf("%s\n", __func__);
     assert(nlane > 0);
     assert(llabs(stride) <= NPY_SIMD_MAXLOAD_STRIDE32);
     const svbool_t mask_all = svptrue_b64();
@@ -442,6 +475,7 @@ npyv_storen_till_s64(npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
             const npyv_lanetype_##F_SFX *ptr, npy_uintp nlane,                \
             npyv_lanetype_##F_SFX fill)                                       \
     {                                                                         \
+      printf("%s\n", __func__);\
         union {                                                               \
             npyv_lanetype_##F_SFX from_##F_SFX;                               \
             npyv_lanetype_##T_SFX to_##T_SFX;                                 \
@@ -453,6 +487,7 @@ npyv_storen_till_s64(npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
             const npyv_lanetype_##F_SFX *ptr, npy_intp stride,                \
             npy_uintp nlane, npyv_lanetype_##F_SFX fill)                      \
     {                                                                         \
+      printf("%s stride=%d nlane%d\n", __func__, stride, nlane);		\
         union {                                                               \
             npyv_lanetype_##F_SFX from_##F_SFX;                               \
             npyv_lanetype_##T_SFX to_##T_SFX;                                 \
@@ -464,6 +499,7 @@ npyv_storen_till_s64(npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
     NPY_FINLINE npyv_##F_SFX npyv_load_tillz_##F_SFX(                         \
             const npyv_lanetype_##F_SFX *ptr, npy_uintp nlane)                \
     {                                                                         \
+      printf("%s\n", __func__);\
         return npyv_reinterpret_##F_SFX##_##T_SFX(npyv_load_tillz_##T_SFX(    \
                 (const npyv_lanetype_##T_SFX *)ptr, nlane));                  \
     }                                                                         \
@@ -471,12 +507,14 @@ npyv_storen_till_s64(npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
             const npyv_lanetype_##F_SFX *ptr, npy_intp stride,                \
             npy_uintp nlane)                                                  \
     {                                                                         \
+      printf("%s stride=%d nlane=%d\n", __func__, stride, nlane);		\
         return npyv_reinterpret_##F_SFX##_##T_SFX(npyv_loadn_tillz_##T_SFX(   \
                 (const npyv_lanetype_##T_SFX *)ptr, stride, nlane));          \
     }                                                                         \
     NPY_FINLINE void npyv_store_till_##F_SFX(npyv_lanetype_##F_SFX *ptr,      \
                                              npy_uintp nlane, npyv_##F_SFX a) \
     {                                                                         \
+      printf("%s\n", __func__);\
         npyv_store_till_##T_SFX((npyv_lanetype_##T_SFX *)ptr, nlane,          \
                                 npyv_reinterpret_##T_SFX##_##F_SFX(a));       \
     }                                                                         \
@@ -484,6 +522,7 @@ npyv_storen_till_s64(npy_int64 *ptr, npy_intp stride, npy_uintp nlane,
             npyv_lanetype_##F_SFX *ptr, npy_intp stride, npy_uintp nlane,     \
             npyv_##F_SFX a)                                                   \
     {                                                                         \
+      printf("%s\n", __func__);\
         npyv_storen_till_##T_SFX((npyv_lanetype_##T_SFX *)ptr, stride, nlane, \
                                  npyv_reinterpret_##T_SFX##_##F_SFX(a));      \
     }

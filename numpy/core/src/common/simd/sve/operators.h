@@ -167,26 +167,32 @@ NPYV_IMPL_SVE_LOGICAL_MASK(b64)
 #define NPYV_IMPL_SVE_COMPARE(SFX, BSFX, SFX1)                \
     NPY_FINLINE npyv_##BSFX npyv_cmpeq_##SFX(SFX1 a, SFX1 b)  \
     {                                                         \
+      printf("hoge40 %s %s\n", __FILE__, __func__);		      \
        return svcmpeq_##SFX(svptrue_##BSFX(), a, a);         \
     }                                                         \
     NPY_FINLINE npyv_##BSFX npyv_cmpneq_##SFX(SFX1 a, SFX1 b) \
     {                                                         \
+      printf("hoge40 %s %s\n", __FILE__, __func__);		      \
         return svcmpne_##SFX(svptrue_##BSFX(), a, b);         \
     }                                                         \
     NPY_FINLINE npyv_##BSFX npyv_cmpgt_##SFX(SFX1 a, SFX1 b)  \
     {                                                         \
+      printf("hoge40 %s %s\n", __FILE__, __func__);		      \
         return svcmpgt_##SFX(svptrue_##BSFX(), a, b);         \
     }                                                         \
     NPY_FINLINE npyv_##BSFX npyv_cmpge_##SFX(SFX1 a, SFX1 b)  \
     {                                                         \
+      printf("hoge40 %s %s\n", __FILE__, __func__);		      \
         return svcmpge_##SFX(svptrue_##BSFX(), a, b);         \
     }                                                         \
     NPY_FINLINE npyv_##BSFX npyv_cmplt_##SFX(SFX1 a, SFX1 b)  \
     {                                                         \
+      printf("hoge40 %s %s\n", __FILE__, __func__);		      \
         return svcmplt_##SFX(svptrue_##BSFX(), a, b);         \
     }                                                         \
     NPY_FINLINE npyv_##BSFX npyv_cmple_##SFX(SFX1 a, SFX1 b)  \
     {                                                         \
+      printf("hoge40 %s %s\n", __FILE__, __func__);		      \
         return svcmple_##SFX(svptrue_##BSFX(), a, b);         \
     }
 
