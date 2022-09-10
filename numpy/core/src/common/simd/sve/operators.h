@@ -110,16 +110,16 @@ NPYV_IMPL_SVE_SHIFT_R_IMM(64)
     NPY_FINLINE npyv_##SFX0 npyv_andc_##SFX0(npyv_##SFX0 a, npyv_##SFX0 b)\
     {                                                                     \
         return svreinterpret_##SFX0##_##SFX2(svbic_##SFX2##_x(            \
-							      svptrue_##SFX1(), svreinterpret_##SFX2##_##SFX0(b), svreinterpret_##SFX2##_##SFX0(a))); \
+							      svptrue_##SFX1(), svreinterpret_##SFX2##_##SFX0(a), svreinterpret_##SFX2##_##SFX0(b))); \
     }
 NPYV_IMPL_SVE_LOGICAL(u8, b8, u8)
 NPYV_IMPL_SVE_LOGICAL(u16, b16, u16)
 NPYV_IMPL_SVE_LOGICAL(u32, b32, u32)
 NPYV_IMPL_SVE_LOGICAL(u64, b64, u64)
-NPYV_IMPL_SVE_LOGICAL(s8, b8, s8)
-NPYV_IMPL_SVE_LOGICAL(s16, b16, s16)
-NPYV_IMPL_SVE_LOGICAL(s32, b32, s32)
-NPYV_IMPL_SVE_LOGICAL(s64, b64, s64)
+NPYV_IMPL_SVE_LOGICAL(s8, b8, u8)
+NPYV_IMPL_SVE_LOGICAL(s16, b16, u16)
+NPYV_IMPL_SVE_LOGICAL(s32, b32, u32)
+NPYV_IMPL_SVE_LOGICAL(s64, b64, u64)
 NPYV_IMPL_SVE_LOGICAL(f32, b32, u32)
 NPYV_IMPL_SVE_LOGICAL(f64, b64, u64)
 
@@ -145,7 +145,7 @@ NPYV_IMPL_SVE_LOGICAL(f64, b64, u64)
     }                                                                 \
     NPY_FINLINE npyv_##SFX npyv_andc_##SFX(npyv_##SFX a, npyv_##SFX b)\
     {                                                                 \
-      return svbic_b_z(svptrue_b8(), b, a);                           \
+      return svbic_b_z(svptrue_b8(), a, b);                           \
     }                                                                 \
     NPY_FINLINE npyv_##SFX npyv_orc_##SFX(npyv_##SFX a, npyv_##SFX b)\
     {                                                                 \
@@ -167,7 +167,7 @@ NPYV_IMPL_SVE_LOGICAL_MASK(b64)
 #define NPYV_IMPL_SVE_COMPARE(SFX, BSFX, SFX1)                \
     NPY_FINLINE npyv_##BSFX npyv_cmpeq_##SFX(SFX1 a, SFX1 b)  \
     {                                                         \
-        return svcmpeq_##SFX(svptrue_##BSFX(), a, b);         \
+       return svcmpeq_##SFX(svptrue_##BSFX(), a, a);         \
     }                                                         \
     NPY_FINLINE npyv_##BSFX npyv_cmpneq_##SFX(SFX1 a, SFX1 b) \
     {                                                         \
