@@ -538,7 +538,7 @@ class _Config:
             ),
             SVE = dict(
                 implies="ASIMDHP",
-                flags="-march=armv8.2-a+sve -msve-vector-bits=512",
+                flags="-march=armv8.2-a+sve -msve-vector-bits=256",
                 autovec=True
             ),
         )
