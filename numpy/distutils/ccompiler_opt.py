@@ -325,6 +325,8 @@ class _Config:
         ASIMDDP = dict(interest=6, implies="ASIMD"),
         ## ARMv8.2 Single & half-precision Multiply
         ASIMDFHM = dict(interest=7, implies="ASIMDHP"),
+        ## ARMv8.2 SVE
+        SVE = dict(interest=8, implies="ASIMDHP"),
     )
     def conf_features_partial(self):
         """Return a dictionary of supported CPU features by the platform,
@@ -533,6 +535,9 @@ class _Config:
             ),
             ASIMDFHM = dict(
                 flags="-march=armv8.2-a+fp16fml"
+            ),
+            SVE = dict(
+                implies="ASIMDHP",
             ),
         )
         if self.cc_on_armhf and is_unix: return dict(
