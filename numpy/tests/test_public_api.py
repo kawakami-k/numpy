@@ -191,6 +191,7 @@ PRIVATE_BUT_PRESENT_MODULES = ['numpy.' + s for s in [
     "core.umath",
     "core.umath_tests",
     "distutils.armccompiler",
+    "distutils.fujitsuccompiler",
     "distutils.ccompiler",
     'distutils.ccompiler_opt',
     "distutils.command",
